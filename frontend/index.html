@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Fresher BLR — jobs for freshers in Bengaluru</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f0eee6;--pn:#faf9f5;--ink:#141413;--mut:#6b6a68;--ln:#e0ddd0;--ac:#c15f3c;--ok:#3f5a2a;--wn:#7a4a12;--wb:#f6e7cf;--land:#f0eee6;--wat:#d3e0e4;--grn:#dfe5cf;--rd:#fffdf8;--rc:#dcd8c8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1f1e1d;--pn:#2b2a28;--ink:#faf9f5;--mut:#a8a69e;--ln:#3d3b37;--ac:#d97757;--ok:#b5cf9a;--wn:#f2c98a;--wb:#43331d;--land:#262624;--wat:#2c3f47;--grn:#2f3a2a;--rd:#4a4741;--rc:#1a1918}}
+:root[data-theme="dark"]{--bg:#1f1e1d;--pn:#2b2a28;--ink:#faf9f5;--mut:#a8a69e;--ln:#3d3b37;--ac:#d97757;--ok:#b5cf9a;--wn:#f2c98a;--wb:#43331d;--land:#262624;--wat:#2c3f47;--grn:#2f3a2a;--rd:#4a4741;--rc:#1a1918}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px;display:grid;grid-template-columns:1fr 440px;overflow:hidden}
+#map{min-height:0;position:relative}svg{width:100%;height:100%;display:block}
+.rd{fill:none;stroke-linecap:round;stroke-linejoin:round}.rc{stroke:var(--rc);stroke-width:3.6}.rf{stroke:var(--rd);stroke-width:2.4}
+.orr .rc{stroke:#c9a24a;stroke-width:5}.orr .rf{stroke:#f3d28a;stroke-width:3.4}
+.lbl{font-size:6.5px;fill:var(--mut);font-weight:600;letter-spacing:1.2px;text-transform:uppercase}
+.pin{cursor:pointer}.pin circle.d{fill:var(--ac);stroke:#fff;stroke-width:1.5}.pin.sel circle.d{fill:var(--ink);r:6}.pin:hover circle.d{r:6}
+.pin text{font-size:7.5px;font-weight:600;fill:var(--ink);opacity:0;paint-order:stroke;stroke:var(--pn);stroke-width:3px;pointer-events:none}
+.pin:hover text,.pin.sel text{opacity:1}
+#note{position:absolute;left:12px;bottom:10px;font-size:11px;color:var(--mut);background:var(--pn);padding:5px 9px;border-radius:6px;border:1px solid var(--ln)}
+#panel{background:var(--pn);overflow:auto;border-left:1px solid var(--ln)}
+#top{padding:16px 20px 0;position:sticky;top:0;background:var(--pn);z-index:2;border-bottom:1px solid var(--ln)}
+.logo{font-weight:700;font-size:18px;letter-spacing:-.3px}.logo i{display:inline-block;width:10px;height:10px;background:var(--ac);border-radius:3px;margin-right:8px}
+.tabs{display:flex;gap:22px;margin-top:10px}.tabs button{border:0;background:none;padding:8px 0;font-weight:600;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;font-size:14px}
+.tabs button.on{color:var(--ink);border-color:var(--ac)}
+#bd{padding:16px 20px 28px}
+h2{margin:0 0 4px;font-size:19px;letter-spacing:-.3px}.sub{color:var(--mut);font-size:13px;margin:0 0 12px;line-height:1.45}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--ln);border-radius:8px;margin-bottom:6px;cursor:pointer}
+.row:hover{border-color:var(--ac);background:var(--bg)}
+.chip{font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--bg);color:var(--mut);white-space:nowrap;border:1px solid var(--ln)}
+.chip.g{background:#e6ecd8;color:#3f5a2a;border-color:#c9d8ae}
+h2,.logo,.tile b{font-family:Newsreader,Georgia,'Iowan Old Style',serif;font-weight:600}
+#dlg{position:fixed;inset:0;background:#0008;display:grid;place-items:center;z-index:20}.dbox{background:var(--pn);border-radius:12px;padding:18px;width:min(340px,90vw)}
+.btn.gh.on{color:var(--ok);border-color:var(--ok)}
+button,input,select,textarea{font:inherit;color:var(--ink)}
+.btn{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:10px 14px;font-weight:600;cursor:pointer;width:100%}
+.btn.sec{background:none;color:var(--ac);border:1px solid var(--ac)}
+.btn.gh{background:none;color:var(--mut);border:1px solid var(--ln);width:auto;padding:4px 9px;font-size:12px;font-weight:500}
+input,select,textarea{width:100%;background:var(--pn);border:1px solid var(--ln);border-radius:8px;padding:9px 10px;margin:0 0 10px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--ac);outline-offset:-1px}
+label{font-size:12px;color:var(--mut);font-weight:600;display:block;margin-bottom:4px}
+.card{border:1px solid var(--ln);border-radius:8px;padding:14px;margin-bottom:10px}
+.warn{background:var(--wb);color:var(--wn);border-radius:8px;padding:9px 11px;font-size:12px;margin-bottom:12px;line-height:1.45}
+a{color:var(--ac);font-weight:600;text-decoration:none}a:hover{text-decoration:underline}.back{background:none;border:0;color:var(--mut);cursor:pointer;padding:0 0 10px;font-weight:600}
+.hp{position:absolute;left:-9999px}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--pn);padding:9px 16px;border-radius:8px;font-size:13px;opacity:0;transition:.3s;pointer-events:none;z-index:9}#toast.on{opacity:1}
+@media(max-width:800px){body{grid-template-columns:1fr;grid-template-rows:38vh 1fr}}
+.pin .ring{fill:none;stroke:var(--ac);stroke-width:1;transform-box:fill-box;transform-origin:center;animation:sn 2.2s ease-out infinite}
+.pin.sel .ring{stroke:var(--ink)}@keyframes sn{from{transform:scale(1);opacity:.8}to{transform:scale(4.5);opacity:0}}
+.pin circle.d.in{animation:pop .55s cubic-bezier(.2,1.6,.4,1) backwards;transform-box:fill-box;transform-origin:center}@keyframes pop{from{transform:scale(0);opacity:0}}
+.fl{stroke:#a16207;stroke-width:1;stroke-dasharray:3 9;animation:fw 2.2s linear infinite}@keyframes fw{to{stroke-dashoffset:-24}}
+.car{fill:var(--ac);opacity:.9}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}.tile{border:1px solid var(--ln);border-radius:10px;padding:10px 12px}.tile b{display:block;font-size:22px;letter-spacing:-.5px}.tile span{font-size:11px;color:var(--mut)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}.fc{cursor:pointer}.fc.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+a.gh{display:inline-block;color:var(--mut)!important;font-weight:500!important}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+.sat{fill:var(--mut);stroke:var(--pn);stroke-width:.8;cursor:pointer;animation:pop .5s cubic-bezier(.2,1.6,.4,1) backwards;transform-box:fill-box;transform-origin:center}
+.sat.hot{fill:var(--ok)}.sat.act{stroke:var(--ac);stroke-width:1.4}.sat:hover{fill:var(--ac)}
+button,a,.row,.chip.fc{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+body{height:100dvh}
+@media(max-width:800px){
+ body{grid-template-rows:42dvh 1fr}
+ #panel{border-left:0;border-top:1px solid var(--ln);border-radius:16px 16px 0 0;margin-top:-14px;position:relative;box-shadow:0 -8px 24px #0002}
+ #note,#top .sub{display:none}
+ #top{padding:14px 16px 0}#bd{padding:14px 16px 32px}
+ .tabs{gap:16px}.tabs button{padding:10px 0}
+ input,select,textarea{font-size:16px;padding:12px}
+ .btn{padding:13px 14px}.btn.gh{padding:8px 11px;font-size:12px}
+ .row{padding:14px 12px}.chip.fc{padding:7px 12px;font-size:12px}.tiles b{font-size:20px}
+ .pin circle.d,.pin:hover circle.d{r:7px}.pin.sel circle.d{r:9px}.pin text{font-size:11px}
+}
+@media(max-width:380px){#top [data-tg]{display:none}}
+</style></head><body>
+<div id="map"><svg id="svg" viewBox="0 0 600 430" preserveAspectRatio="xMidYMid meet"><rect x="-600" y="-600" width="1800" height="1600" fill="var(--land)"/><g id="base"></g><g id="nodes"></g></svg><div id="note">Pin positions are approximate — use “Open in Maps” for the exact address. Pulsing pins have live openings.</div></div>
+<div id="panel"><div id="top"><div style="display:flex;justify-content:space-between;align-items:center"><div><div class="logo"><i></i>Fresher BLR</div><div class="sub" style="margin:0;font-size:12px">Jobs for freshers across Bengaluru</div></div><span><button class="btn gh" data-bell="1">🔔 Alerts</button> <button class="btn gh" data-tg="1">Light / Dark</button></span></div><div class="tabs"><button data-tab="parks">Tech Parks</button><button data-tab="other">City Jobs</button><button data-tab="saved">Saved</button></div></div><div id="bd"></div></div><div id="toast"></div>
+<script>
+// PUBLIC MODE: put your Render backend URL in api (e.g. 'https://walkin-blr-api.onrender.com'). Leave site blank to use the page's own address.
+const CFG={api:'http://127.0.0.1:5000',site:''};
+const SITE=CFG.site||location.href;const RM=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches);
+// [id, name, location, lat, lng, companies ";"-separated, optional "|note"]. null lat = not pinned (location not confirmed).
+const SEED=[
+["btp","Bagmane Tech Park","C.V. Raman Nagar",12.98,77.664,"Volvo;Dell;PwC;Cisco;Boeing;Nike;Informatica;Motorola;Micro Focus|now OpenText;Texas Instruments;Grant Thornton;Vivero;Infineon;Palo Alto Networks;Lam Research"],
+["bwtc","Bagmane World Technology Centre","Garudachar Palya, Mahadevapura",12.989,77.684,"EY;Visa;Accenture;Samsung;Google;Ericsson;Mphasis;ARM;AB InBev;Boeing;EMC/Dell;NVIDIA"],
+["bcon","Bagmane Constellation Business Park","Ferns City, Doddanekkundi",12.972,77.7,"Google;Amazon;Qualcomm;Samsung;Boeing;NVIDIA"],
+["bcap","Bagmane Capital","Ferns City, Doddanekkundi",12.967,77.706,"Google;Microsoft;GSK;American Express;Wayfair;Samsung;BNP Paribas;Amazon;Qualcomm;Databricks;ARM"],
+["bsol","Bagmane Solarium City","Kundalahalli Colony, Brookefield",12.9725,77.7185,"Cognizant;Carelon;Shell;Schneider Electric;Tekion;Northern Trust;BHGE|now Baker Hughes;Zebra;DDB;Visteon"],
+["brio","Bagmane Rio Business Park","Outer Ring Road, Doddanekkundi",12.962,77.698,"Google"],
+["manyata","Embassy Manyata Business Park","Nagawara, North Bengaluru",13.045,77.62,"Cognizant;L Brands|now Bath & Body Works;Victoria's Secret;Lowe's;Cerner|now Oracle Health;Hudson's Bay Company;Harman;Rolls-Royce;IBM;Justdial;Voonik;GLOBALFOUNDRIES;Larsen & Toubro;NXP Semiconductors;Nokia Networks;Philips;Alcatel-Lucent|now Nokia;Fidelity Investments;Target;Qualitest;Northern Trust;NVIDIA;iTS;WSP;AXA"],
+["etv","Embassy TechVillage","Devarabeesanahalli, Outer Ring Road",12.9345,77.6895,"CSG;Cisco;Eli Lilly;Flipkart;Great West|now Empower;JPMorgan;MathWorks;Rockwell Collins|now Collins Aerospace;Software AG;Sony;Telstra;Xiaomi"],
+["golf","Embassy GolfLinks Business Park","Domlur / Challaghatta",12.953,77.648,"NTT Data;Facebook|now Meta;Sony;Halliburton;Philips;Wells Fargo;Fidelity;AstraZeneca;Volvo;ANSR;Warner Bros.;WeWork;Optum;Lilly"],
+["btpw","Brigade Tech Park","Whitefield, Pattandur Agrahara",12.984,77.729,"IDrive Software India;INSZoom Software;Creative Synergies Consulting;Standard Chartered Global Business Services;Incadea India"],
+["btg","Brigade Tech Gardens","Brookefield, Whitefield",12.9655,77.7135,"Jaguar Land Rover India;Fossil India;Firstsource Solutions;Axtria India;Manhattan Associates;Fidelity National Financial India;WiseTech Global;Ralph Lauren Sourcing;Infosys;Blume Global India;Advanced Monolithic Power Semiconductor;CMPSS India Tech;Girmiti Software"],
+["cessna","Prestige Cessna Business Park","Kadubeesanahalli, Outer Ring Road",12.9335,77.6955,"Rubrik India;SIXT Research and Development India;Micron Technology Operations India;Cargill Business Services India;HCL Technologies"],
+["ptp","Prestige Tech Park","Kadubeesanahalli, Outer Ring Road",12.9395,77.6975,"Nutanix;Amadeus;Cult.fit;Elanco;KnowBe4;Ceragon"],
+["rmzeco","RMZ Ecospace","Bellandur, Outer Ring Road",12.9265,77.6775,"Intuit;HSBC;Zycus;Ernst & Young"],
+["rmzew","RMZ Ecoworld","Devarabeesanahalli, Outer Ring Road",12.9235,77.6835,"Deloitte;Cadence Design Systems;Netcon Technologies;Cowrks"],
+["gtp","Global Technology Park","Outer Ring Road, Sarjapur–Marathahalli",12.9425,77.6835,"LinkedIn;Synechron;GSN Games"],
+["rga","RGA Tech Park","Sarjapur Main Road, Chikkanahalli / Varthur",12.9075,77.7115,"Uber India Support Center;PayPal India;Siemens Technologies"],
+["dsree","DivyaSree 77° Town Centre / Technopolis","Yemalur, HAL Airport Road",12.9585,77.6685,"Deloitte;LSEG;Aditya Birla;CGI;Dell;Landmark Group"],
+["rmzinf","RMZ Infinity","Old Madras Road, Benniganahalli / K.R. Puram",13.001,77.664,"Synopsys;British Telecom;Cowrks;Ernst & Young;Boeing;State Street Global Advisors;BGRS Global;EXL"],
+["sgc","Sattva Global City","Kengeri, Mysore Road",12.909,77.482,"LTIMindtree;Mphasis;NTT Data / NTT Global;Tietoevry;Northern Trust;Textron;Sonata Software;Texas Instruments;Capgemini"],
+["itpl","International Tech Park Bangalore (ITPB / ITPL)","Whitefield",12.987,77.737,"IPsoft;General Motors;Société Générale;Mu Sigma;Xerox;Conduent;AT&T;Soais;Sharp;Scientific Games;Medtronic;iGATE|now Capgemini;GE;Airtel;Moving Picture Company;TCS;Startek;Gyansys Infotech;Technicolor;Atos;Unisys;Delphi;Huawei;Oracle;Perot Systems|now NTT Data;Applied Materials;GalaxE Solutions;First American Corporation"],
+["stp","Sattva Techpoint","Inner Ring Road, Bengaluru",null,0,""],
+["ssup","Sattva Supreme","Outer Ring Road, Bengaluru",null,0,""],
+["skc","Sattva Knowledge Court","Bengaluru",null,0,""],
+["ssz","Sattva Softzone","Bengaluru",null,0,""],
+["siz","Sattva Infozone","Bengaluru",null,0,""]];
+SEED.forEach(s=>s[5]=s[5]?s[5].split(';').map(x=>{const[n,t]=x.split('|');return{n,t,z:''}}):[]);
+const CATS=["IT & Software","BPO & Customer Support","Internship / Trainee","Sales & Marketing","Banking & Finance","Retail & Shops","Hotels & Food","Healthcare","Education","Delivery & Logistics","Manufacturing","Security & Facility","Other"];
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const X=g=>(g-77.44)/.34*600,Y=t=>(13.08-t)/.22*430,SZ={S:"Small",M:"Medium",L:"Large"},DAY=864e5,TTL=7;
+const live=p=>(p.flags||0)<3&&(p.type=='co'||Date.now()-p.ts<TTL*DAY);
+let posts=[],V={tab:'parks',p:null,c:null,form:null,q:'',cat:'',zone:'',hot:false},flagged=new Set(),dbc=null,store=null;
+const sv=$('#svg'),pth=a=>'M'+a.map(([t,g])=>X(g).toFixed(0)+' '+Y(t).toFixed(0)).join('L');
+const road=(a,c='')=>`<g class="${c}"><path class="rd rc" d="${pth(a)}"/><path class="rd rf" d="${pth(a)}"/>${c?`<path class="rd fl" d="${pth(a)}"/>`:''}</g>`,blob=(t,g,rx,ry,f)=>`<ellipse cx="${X(g)}" cy="${Y(t)}" rx="${rx}" ry="${ry}" fill="var(${f})"/>`,tx=(t,g,s)=>`<text class="lbl" x="${X(g)}" y="${Y(t)}" text-anchor="middle">${s}</text>`;
+$('#base').innerHTML=blob(12.976,77.593,16,10,'--grn')+blob(12.95,77.585,9,10,'--grn')+blob(12.94,77.667,12,7,'--wat')+blob(12.983,77.619,7,5,'--wat')+blob(13.046,77.594,10,6,'--wat')+blob(12.94,77.742,9,6,'--wat')+
+road([[12.917,77.623],[12.88,77.65]])+road([[13.04,77.59],[13.08,77.62]])+road([[12.98,77.64],[12.987,77.737],[12.99,77.78]])+road([[12.95,77.56],[12.928,77.517],[12.905,77.48]])+road([[12.917,77.623],[12.98,77.59],[13.04,77.59]])+road([[12.975,77.5],[12.975,77.57],[12.98,77.64]])+
+road([[13.04,77.59],[13.04,77.62],[13.01,77.7],[12.955,77.7],[12.93,77.67],[12.917,77.623],[12.915,77.55],[12.96,77.5],[13.02,77.54],[13.04,77.59]],'orr')+
+tx(12.99,77.57,'Malleshwaram')+tx(12.955,77.612,'Koramangala')+tx(12.977,77.632,'Indiranagar')+tx(12.995,77.755,'Whitefield')+tx(13.07,77.6,'Yelahanka')+tx(12.9,77.57,'Jayanagar')+tx(12.895,77.62,'Silk Board')+tx(12.96,77.535,'Rajajinagar')+tx(12.946,77.595,'Outer Ring Road').replace('Outer Ring Road','');
+const ORRD=pth([[13.04,77.59],[13.04,77.62],[13.01,77.7],[12.955,77.7],[12.93,77.67],[12.917,77.623],[12.915,77.55],[12.96,77.5],[13.02,77.54],[13.04,77.59]]);
+$('#base').innerHTML+=[0,-7,-14].map(b=>`<circle class="car" r="1.7"><animateMotion dur="21s" begin="${b}s" repeatCount="indefinite" path="${ORRD}"/></circle>`).join('');
+const zone=s=>s[3]==null?'Unpinned':s[4]<77.55?'West':s[3]>13.02?'North':s[4]>77.7&&s[3]>=12.95?'Whitefield / East':s[3]<12.95?'ORR South-East':'Central-East';
+let vb=[0,0,600,430],tg=vb;
+function tween(){vb=vb.map((v,i)=>v+(tg[i]-v)*.15);sv.setAttribute('viewBox',vb.join(' '));if(vb.some((v,i)=>Math.abs(v-tg[i])>.2))requestAnimationFrame(tween)}
+function comps(pid){const s=SEED.find(x=>x[0]==pid),m=new Map();s[5].forEach(c=>m.set(c.n.toLowerCase(),c));
+ posts.filter(p=>p.type!='other'&&p.park==pid&&live(p)).forEach(p=>{const k=p.co.toLowerCase();if(!m.has(k))m.set(k,{n:p.co,z:p.size||'',t:p.type=='co'?'added by user':''})});return[...m.values()]}
+const opens=(pid,co)=>posts.filter(p=>p.type=='park'&&p.park==pid&&p.co.toLowerCase()==co.toLowerCase()&&live(p));
+function drawMap(){const sel=V.tab=='parks'&&SEED.find(s=>s[0]==V.p);let h='';
+ const intro=(drawMap.n=(drawMap.n||0)+1)==1;
+ SEED.forEach((s,i)=>{if(s[3]==null)return;const hot=posts.some(p=>p.type=='park'&&p.park==s[0]&&live(p));h+=`<g class="pin ${sel==s?'sel':''}" data-p="${s[0]}" transform="translate(${X(s[4])},${Y(s[3])})"><circle r="16" fill="transparent"/>${hot||sel==s?'<circle class="ring" r="4.5"/>':''}<circle class="d ${intro?'in':''}" style="animation-delay:${i*45}ms" r="4.5"/><text x="8" y="-6">${esc(s[1])}</text></g>`});
+ if(sel&&sel[3]!=null){const cs=comps(sel[0]),n1=Math.min(cs.length,9),ring=(arr,r,dir,dur)=>arr.length?`<circle r="${r}" fill="none" stroke="var(--ac)" stroke-width=".35" stroke-dasharray="1.5 2.5" opacity=".7"/><g>${RM?'':`<animateTransform attributeName="transform" type="rotate" from="0" to="${360*dir}" dur="${dur}s" repeatCount="indefinite"/>`}${arr.map((c,i)=>{const a=i/arr.length*6.283;return`<circle class="sat ${opens(sel[0],c.n).length?'hot':''} ${c.n===V.c?'act':''}" data-c="${esc(c.n)}" cx="${(r*Math.cos(a)).toFixed(1)}" cy="${(r*Math.sin(a)).toFixed(1)}" r="${c.z=='S'?2.4:c.z=='L'?3.4:2.9}" style="animation-delay:${i*40}ms"><title>${esc(c.n)}</title></circle>`}).join('')}</g>`:'';
+  h+=`<g transform="translate(${X(sel[4])},${Y(sel[3])})">${ring(cs.slice(0,n1),14,1,40)}${ring(cs.slice(n1,n1+18),23,-1,60)}</g>`}
+ $('#nodes').innerHTML=h;tg=sel&&sel[3]!=null?[X(sel[4])-45,Y(sel[3])-32,90,64.5]:[0,0,600,430];tween()}
+const mapQ=q=>`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+const cta=c=>{c=String(c||'').trim();return`<a href="${c.includes('@')?'mailto:'+encodeURI(c):'tel:'+esc(c.replace(/[^\d+]/g,''))}">${esc(c)}</a>`};
+const getSaved=()=>{try{return JSON.parse(store.getItem('wb3s')||'[]')}catch(e){return[]}};
+const where=p=>p.type=='other'?p.addr+', '+p.area:(SEED.find(s=>s[0]==p.park)||[])[1];
+const flagBtn=p=>{const sd=getSaved().includes(p.id),w=p.role+' at '+p.co+' ('+where(p)+') — job opening on Fresher BLR';return`<div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"><button class="btn gh ${sd?'on':''}" data-save="${esc(p.id)}">${sd?'★ Saved':'☆ Save'}</button><a class="btn gh" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(w)}">Share on WhatsApp</a><button class="btn gh" data-ok="${esc(p.id)}">✓ Genuine${p.ok?' ('+p.ok+')':''}</button><button class="btn gh" data-flag="${esc(p.id)}">⚑ Fake / spam</button>${mine().includes(p.id)?`<button class="btn gh" data-del="${esc(p.id)}">Remove my post</button>`:''}</div>${p.flags?`<div class="warn" style="margin:8px 0 0">⚠ Marked fake/spam ${p.flags}×${p.why?' — '+esc(p.why):''}. Be careful.</div>`:''}`};
+const card=p=>`<div class="card"><b>${esc(p.role)}</b> <span class="chip">${esc(p.exp)}</span>${p.mode?`<span class="chip">${esc(p.mode)}</span>`:''}<div class="sub" style="margin:2px 0 6px">${esc(p.co)} · ${esc(where(p))}</div>${p.when?`<p class="sub" style="margin:0 0 6px"><b>Walk-in:</b> ${esc(p.when)}</p>`:''}<p class="sub" style="margin:0 0 6px">Posted by ${esc(p.name||'an employee')} · ${age(p)}</p>${cta(p.contact)}${flagBtn(p)}</div>`;
+function savedView(B){const ids=getSaved(),L=posts.filter(p=>ids.includes(p.id)&&live(p));B.innerHTML='<p class="sub">Openings you saved on this device.</p>'+(L.length?L.map(card).join(''):'<p class="sub">Nothing saved yet. Tap ☆ Save on any opening.</p>')}
+const when_=p=>new Date(p.ts).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'});
+const age=p=>{const d=Math.floor((Date.now()-p.ts)/DAY);return when_(p)+` (${d?d+'d ago':'today'}) · expires in ${Math.max(TTL-d,0)}d`};
+const lset=(k,a)=>{try{store.setItem(k,JSON.stringify(a))}catch(e){}},lget=k=>{try{return JSON.parse(store.getItem(k)||'[]')}catch(e){return[]}},voted=()=>lget('wb3v'),mine=()=>lget('wb3m');
+async function vote(id,kind,w,r){if(voted().includes(id))return toast('You have already voted on this post.');const p=posts.find(x=>x.id==id);if(!p)return;const f={[kind]:(p[kind]||0)+w};if(r)f.why=r;
+ try{if(dbc&&dbc.vote)await dbc.vote(id,kind,w,r);else if(dbc)await dbc.doc(id).update(f);else{Object.assign(p,f);lset('wb3',posts)}lset('wb3v',[...voted(),id]);toast(kind=='ok'?'Thanks — marked as genuine.':'Thanks — marked as fake/spam. 3 marks hide a post.');render()}catch(e){toast(e&&e.message&&isNaN(e.message)?e.message:'Could not record right now.')}}
+function askReason(id){const d=document.createElement('div');d.id='dlg';d.innerHTML=`<div class="dbox"><b>Mark as fake / spam</b><p class="sub">What is wrong with this post?</p>${[['Fake company or role',1],['Asks for money or fees',3],['Wrong or unreachable contact',1],['Spam or duplicate',1],['Position already filled',1]].map(([r,w])=>`<button class="btn sec" data-why="${w}" data-id="${esc(id)}" data-r="${esc(r)}" style="margin-bottom:6px">${r}</button>`).join('')}<button class="btn gh" data-why="0">Cancel</button></div>`;document.body.appendChild(d)}
+const SAFE='<div class="warn"><b>Stay safe:</b> genuine employers never ask for money, deposits or “training fees”. Confirm the company’s presence and the interview details before you travel.</div>';
+function render(){
+ document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab==V.tab));drawMap();
+ const B=$('#bd');if(V.form)return form(B);if(V.tab=='other')return other(B);if(V.tab=='saved')return savedView(B);
+ if(!V.p){const q=V.q.toLowerCase(),nc=SEED.reduce((a,s)=>a+comps(s[0]).length,0),tot=posts.filter(p=>p.type=='park'&&live(p)).length;
+  const zs=[...new Set(SEED.map(zone))];
+  let h=`<div class="tiles"><div class="tile"><b>${SEED.length}</b><span>Tech parks</span></div><div class="tile"><b>${nc}</b><span>Companies</span></div><div class="tile"><b>${tot}</b><span>Live openings</span></div></div><p class="sub">Share: <a target="_blank" rel="noopener" href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE)}">LinkedIn</a> · <a target="_blank" rel="noopener" href="https://twitter.com/intent/tweet?text=${encodeURIComponent('Fresher jobs in Bengaluru — tech parks and beyond')}&url=${encodeURIComponent(SITE)}">X</a> · <a target="_blank" rel="noopener" href="https://www.reddit.com/submit?url=${encodeURIComponent(SITE)}&title=${encodeURIComponent('Fresher BLR — fresher jobs across Bengaluru')}">Reddit</a> · <a href="#" data-shr="1">Copy link</a></p><input id="q" placeholder="Search a park or company" value="${esc(V.q)}"><div class="chips"><span class="chip fc ${!V.zone&&!V.hot?'on':''}" data-zone="">All</span><span class="chip fc ${V.hot?'on':''}" data-hot="1">Has openings</span><span class="chip fc ${V.fr?'on':''}" data-fr="1">Freshers welcome</span>${zs.map(z=>`<span class="chip fc ${V.zone==z?'on':''}" data-zone="${z}">${z}</span>`).join('')}</div><button class="btn" data-act="form" style="margin-bottom:14px">Post a job</button>`;
+  const rec=posts.filter(p=>p.type!='co'&&live(p)&&(!V.fr||/fresher/i.test(p.exp))).sort((a,b)=>b.ts-a.ts).slice(0,3);if(rec.length)h+='<p class="sub"><b>Latest openings</b></p>'+rec.map(card).join('')+'<p class="sub"><b>All tech parks</b></p>';
+  h+=SEED.filter(s=>(!q||s[1].toLowerCase().includes(q)||comps(s[0]).some(c=>c.n.toLowerCase().includes(q)))&&(!V.zone||zone(s)==V.zone)&&(!V.hot||posts.some(p=>p.type=='park'&&p.park==s[0]&&live(p)))&&(!V.fr||posts.some(p=>p.type=='park'&&p.park==s[0]&&live(p)&&/fresher/i.test(p.exp)))).map(s=>{const n=posts.filter(p=>p.type=='park'&&p.park==s[0]&&live(p)).length,cn=comps(s[0]).length,hit=q&&comps(s[0]).find(c=>c.n.toLowerCase().includes(q));
+   return`<div class="row" data-p="${s[0]}"><div><b>${esc(s[1])}</b><div class="sub" style="margin:2px 0 0">${esc(s[2])} · ${cn?cn+' companies':'companies to be added'}${hit?' · <b>'+esc(hit.n)+'</b>':''}</div></div><span class="chip ${n?'g':''}">${n} open</span></div>`}).join('');
+  B.innerHTML=h;$('#q').oninput=e=>{V.q=e.target.value;const p=e.target.selectionStart;render();const n=$('#q');n.focus();n.setSelectionRange(p,p)};return}
+ const s=SEED.find(a=>a[0]==V.p),loc=`${s[1]}, ${s[2]}, Bengaluru`;
+ if(!V.c){const cs=comps(s[0]);
+  B.innerHTML=`<button class="back" data-act="home">← All tech parks</button><h2>${esc(s[1])}</h2><p class="sub">${esc(s[2])} · <a target="_blank" rel="noopener" href="${mapQ(loc)}">Open in Maps</a>${s[3]==null?' · <i>Map pin not set — location not yet confirmed</i>':''}</p>${SAFE}
+  <button class="btn" data-act="form" style="margin-bottom:8px">Post a job</button><button class="btn sec" data-follow="${s[0]}" style="margin-bottom:8px">${lget('wb3f').includes(s[0])?'🔔 Following — alerts on':'Follow this park for alerts'}</button><button class="btn sec" data-act="coform" style="margin-bottom:14px">Add a missing company</button>
+  <p class="sub"><b>${cs.length} companies</b> — company lists are indicative and can change; green means an opening is posted.</p>`+
+  (cs.length?cs.map(c=>{const n=opens(s[0],c.n).length;return`<div class="row" data-c="${esc(c.n)}"><div><b>${esc(c.n)}</b>${c.t?` <span class="sub" style="margin:0">(${esc(c.t)})</span>`:''}${c.z?` <span class="chip">${SZ[c.z]}</span>`:''}</div><span class="chip ${n?'g':''}">${n?n+' open':'no posts'}</span></div>`}).join(''):'<p class="sub">Companies for this park have not been verified yet. If you work here, add your company.</p>');return}
+ const o=opens(s[0],V.c);
+ B.innerHTML=`<button class="back" data-act="park">← ${esc(s[1])}</button><h2>${esc(V.c)}</h2><p class="sub">Venue: ${esc(s[1])}, ${esc(s[2])} · <a target="_blank" rel="noopener" href="${mapQ(loc)}">Open in Maps</a></p>${SAFE}`+
+ (o.length?o.sort((a,b)=>b.ts-a.ts).map(p=>`<div class="card"><b>${esc(p.role)}</b> <span class="chip">${esc(p.exp)}</span>${p.mode?`<span class="chip">${esc(p.mode)}</span>`:''}${p.when?`<p class="sub" style="margin:6px 0 0"><b>Walk-in:</b> ${esc(p.when)}</p>`:''}<p class="sub" style="margin:6px 0">Posted by ${esc(p.name||'an employee')} · ${age(p)}</p>${cta(p.contact)}${flagBtn(p)}</div>`).join(''):'<p class="sub">No openings posted yet. Work here? Be the first.</p>')+'<button class="btn" data-act="form">Post a job</button>'}
+function other(B){const q=V.q.toLowerCase(),L=posts.filter(p=>p.type=='other'&&live(p)&&(!V.cat||p.cat==V.cat)&&(!V.fr||/fresher/i.test(p.exp))&&(!q||(p.role+p.co+p.addr+p.area).toLowerCase().includes(q))).sort((a,b)=>b.ts-a.ts);
+ B.innerHTML=`<p class="sub">Jobs anywhere in Bengaluru outside the tech parks — IT, BPO, sales, retail, hospitals, hotels, factories, internships and more. Freshers welcome.</p>${SAFE}<button class="btn" data-act="form" style="margin-bottom:12px">Post a job</button><div class="chips"><span class="chip fc ${V.fr?'on':''}" data-fr="1">Freshers welcome</span></div><input id="q" placeholder="Search role, business or area" value="${esc(V.q)}"><select id="cat"><option value="">All categories</option>${CATS.map(c=>`<option ${c==V.cat?'selected':''}>${c}</option>`).join('')}</select>`+
+ (L.length?L.map(p=>`<div class="card"><b>${esc(p.role)}</b> <span class="chip">${esc(p.cat)}</span><div class="sub" style="margin:2px 0 8px">${esc(p.co)} · ${esc(p.exp)}${p.mode?' · '+esc(p.mode):''}</div><p class="sub" style="margin:0 0 4px"><b>Address:</b> ${esc(p.addr)}, ${esc(p.area)} · <a target="_blank" rel="noopener" href="${mapQ(p.addr+', '+p.area+', Bengaluru')}">Open in Maps</a></p>${p.when?`<p class="sub" style="margin:0 0 4px"><b>Walk-in:</b> ${esc(p.when)}</p>`:''}<p class="sub" style="margin:0 0 8px"><b>Details:</b> ${esc(p.apply)}</p>${cta(p.contact)}${flagBtn(p)}<div class="sub" style="margin:8px 0 0;font-size:12px">${esc(p.name||'')} · ${age(p)}</div></div>`).join(''):'<p class="sub">No openings match yet.</p>');
+ $('#q').oninput=e=>{V.q=e.target.value;const p=e.target.selectionStart;render();const n=$('#q');n.focus();n.setSelectionRange(p,p)};$('#cat').onchange=e=>{V.cat=e.target.value;render()}}
+const F=(id,l,ph,t='input')=>`<label for="f-${id}">${l}</label><${t} id="f-${id}" placeholder="${ph||''}" maxlength="${t=='input'?80:300}"></${t}>`;
+function form(B){const k=V.form,s=SEED.find(a=>a[0]==(V.p||SEED[0][0]));
+ const head=`<button class="back" data-act="cancel">← Cancel</button><h2>${k=='other'?'Post a job':k=='co'?'Add a company':'Post a job'}</h2>`+(k=='co'?'<p class="sub">Add a company that works from this park. Others can report incorrect entries.</p>':'<p class="sub">Post only real, current roles. The posting date and time are recorded automatically. Posts expire automatically after 7 days and are hidden after 3 fake/spam marks.</p>');
+ const park=`<label for="f-park">Tech park</label><select id="f-park">${SEED.map(a=>`<option value="${a[0]}" ${a==s?'selected':''}>${esc(a[1])}</option>`).join('')}</select>`;
+ const co=`<label for="f-co">Company name</label><input id="f-co" list="cl" maxlength="60" value="${esc(V.c||'')}"><datalist id="cl">${comps(s[0]).map(c=>`<option value="${esc(c.n)}">`).join('')}</datalist>`;
+ const sz=`<label for="f-sz">Company size</label><select id="f-sz"><option value="">Not sure</option><option value="S">Small</option><option value="M">Medium</option><option value="L">Large</option></select>`;
+ B.innerHTML=head+(k=='other'?`<label for="f-cat">Category</label><select id="f-cat">${CATS.map(c=>`<option>${c}</option>`).join('')}</select>${F('co','Business name')}${F('addr','Full address','Building, street')}${F('area','Area / locality','e.g. Indiranagar')}`:park+co+sz)+
+ (k=='co'?'':F('role','Position (optional)','e.g. Software Engineer')+`<label for="f-exp">Experience required</label><select id="f-exp"><option>Freshers welcome</option><option>Freshers only</option><option>0–1 years</option><option>1–3 years</option><option>3+ years</option></select><label for="f-mode">How candidates apply</label><select id="f-mode"><option>Walk-in</option><option>Email resume</option><option>Call HR</option><option>Apply at office</option></select>`+F('when','Interview / walk-in date & time (optional)','e.g. Mon–Fri, 10am–4pm')+(k=='other'?F('apply','Application details','e.g. Bring resume, ask for HR at reception','textarea'):'')+F('ct','Contact (email or 10-digit mobile)')+F('nm','Your name'))+
+ `<input class="hp" id="f-web" tabindex="-1" autocomplete="off" aria-hidden="true"><button class="btn" data-act="submit">${k=='co'?'Add company':'Publish opening'}</button>`}
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),3200)}
+const BAD=/https?:|www\.|\.(com|in|xyz|link)\b|bit\.ly|t\.me|telegram|whatsapp group|(fee|deposit|advance|security amount|registration charge)|earn\s*(rs|₹|\d)|₹\s?\d|\brs\.?\s?\d/i,PH=/^(\+91[\s-]?|0)?[6-9]\d{9}$/,EM=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+function check(o){const t=[o.co,o.role,o.exp,o.addr,o.area,o.apply,o.name,o.when].filter(Boolean).join(' ');
+ if(BAD.test(t))return'Links, payment or fee-related wording are not allowed — genuine openings never ask for money.';
+ if(o.type!='co'&&!(EM.test(o.contact)||PH.test(o.contact.replace(/[\s-]/g,''))))return'Enter a valid email or 10-digit Indian mobile number.';
+ if(o.co.length<2||false)return'Company name and position look too short.';
+ if(/(.)\1{4,}/.test(t))return'Please enter meaningful text.';
+ if(posts.some(p=>live(p)&&p.type==o.type&&(p.co||'').toLowerCase()==o.co.toLowerCase()&&(p.role||'')==o.role&&(p.contact||'')==o.contact&&p.park==o.park))return'This opening is already posted.';
+ let ts=[];try{ts=JSON.parse(store.getItem('wb3t')||'[]').filter(x=>Date.now()-x<36e5)}catch(e){}
+ if(ts.length>=3)return'Limit reached: 3 posts per hour. Please try again later.';return''}
+async function save(o){o.ts=Date.now();o.flags=0;try{if(dbc){const r=await dbc.add(o);lset('wb3m',[...mine(),r.id])}else{o.id='l'+o.ts;posts.push(o);lset('wb3',posts);lset('wb3m',[...mine(),o.id])}
+ try{const ts=JSON.parse(store.getItem('wb3t')||'[]').filter(x=>Date.now()-x<36e5);ts.push(Date.now());store.setItem('wb3t',JSON.stringify(ts))}catch(e){}}catch(e){toast(e&&e.message&&isNaN(e.message)?e.message:'Could not publish right now.');return false}return true}
+document.addEventListener('click',async e=>{
+ const t=e.target.closest('[data-p],[data-c],[data-act],[data-flag],[data-tab],[data-zone],[data-hot],[data-save],[data-fr],[data-follow],[data-bell],[data-shr],[data-tg],[data-ok],[data-del],[data-why]');if(!t||t===document.documentElement)return;e.preventDefault();const d=t.dataset;
+ if(d.tab){V={tab:d.tab,p:null,c:null,form:null,q:'',cat:'',zone:'',hot:false}}
+ else if(d.follow){let f=lget('wb3f');const on=!f.includes(d.follow);f=on?[...f,d.follow]:f.filter(x=>x!=d.follow);lset('wb3f',f);toast(on?'Following. You will be alerted about new openings here.':'Unfollowed.')}
+ else if(d.bell){try{const r=await Notification.requestPermission();toast(r=='granted'?'Browser alerts on while this page is open.':'Alerts blocked — you will still see in-page alerts.')}catch(x){toast('Browser alerts are not supported here.')}return}
+ else if(d.shr){try{await navigator.clipboard.writeText(SITE);toast('Link copied.')}catch(x){toast(SITE)}return}
+ else if(d.fr){V.fr=!V.fr}
+ else if(d.zone!==undefined){V.zone=d.zone;V.hot=false}else if(d.hot){V.hot=!V.hot;V.zone=''}
+ else if(d.save){let a=getSaved();a=a.includes(d.save)?a.filter(x=>x!=d.save):[...a,d.save];try{store.setItem('wb3s',JSON.stringify(a))}catch(x){toast('Saving is unavailable here.')}}
+ else if(d.tg){const r=document.documentElement;r.dataset.theme=(r.dataset.theme||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))=='dark'?'light':'dark'}
+ else if(d.flag){askReason(d.flag);return}
+ else if(d.ok){await vote(d.ok,'ok',1);return}
+ else if(d.del){try{if(dbc)await dbc.doc(d.del).delete();else{posts=posts.filter(x=>x.id!=d.del);lset('wb3',posts)}toast('Your post was removed.');render()}catch(x){toast('Could not remove this post.')}return}
+ else if(d.why!==undefined){const dl=$('#dlg');if(dl)dl.remove();if(d.why!='0')await vote(d.id,'flags',+d.why,d.r);return}
+ else if(d.act=='home'){V.p=V.c=null;V.q=''}else if(d.act=='park'){V.c=null}else if(d.act=='form'){V.form=V.tab=='other'?'other':'park'}else if(d.act=='coform'){V.form='co'}else if(d.act=='cancel'){V.form=null}
+ else if(d.act=='submit'){const g=i=>{const n=$('#f-'+i);return n?n.value.trim():''},k=V.form;
+  if(g('web')){V.form=null;return render()}
+  const o=k=='other'?{type:'other',cat:g('cat'),co:g('co'),addr:g('addr'),area:g('area'),role:g('role'),exp:g('exp')||'Any',apply:g('apply')||'See contact details',contact:g('ct'),name:g('nm')}:{type:k=='co'?'co':'park',park:g('park'),co:g('co'),size:g('sz'),role:g('role'),exp:g('exp')||'Any',contact:g('ct'),name:g('nm')};
+  if(k=='other'&&(!o.addr||!o.area))return toast('Address and area are required.');
+  o.when=g('when');if(o.type!='co')o.mode=g('mode');if(o.type!='co'&&!o.role)o.role='Multiple roles';const er=check(o);if(er)return toast(er);if(!await save(o))return;
+  V=k=='other'?{tab:'other',p:null,c:null,form:null,q:'',cat:''}:{tab:'parks',p:o.park,c:k=='co'?null:o.co,form:null,q:'',cat:''};toast('Published.')}
+ else if(d.p){V.tab='parks';V.p=d.p;V.c=null;V.form=null}else if(d.c){V.c=d.c;V.form=null}
+ render()});
+document.addEventListener('change',e=>{if(e.target.id=='f-park'){V.p=e.target.value;$('#cl').innerHTML=comps(V.p).map(c=>`<option value="${esc(c.n)}">`).join('')}});
+try{store=window.localStorage;posts=JSON.parse(store.getItem('wb3')||'[]')}catch(e){}
+render();
+let known=null;
+function notifyNew(n){const ids=new Set(n.map(p=>p.id));if(known)n.filter(p=>!known.has(p.id)&&p.type!='co'&&live(p)).forEach(p=>{const f=lget('wb3f');if(!f.length||f.includes(p.park)){const m=`New opening: ${p.role} at ${p.co}`;toast(m);try{if(Notification.permission=='granted')new Notification('Fresher BLR',{body:m})}catch(e){}}});known=ids}
+function apiShim(){const A=CFG.api.replace(/\/$/,'')+'/api/posts',K=()=>{try{return JSON.parse(store.getItem('wb3k')||'{}')}catch(e){return{}}};
+ const j=async(u,o={})=>{const r=await fetch(u,{...o,headers:{'Content-Type':'application/json',...(o.headers||{})}});const b=await r.json().catch(()=>({}));if(!r.ok)throw new Error(b.error||String(r.status));return b};
+ return{add:async o=>{const tok=(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now().toString(36)+'xxxxxxxx');const{ts,flags,...d}=o;const r=await j(A,{method:'POST',body:JSON.stringify({d,token:tok})});try{store.setItem('wb3k',JSON.stringify({...K(),[r.id]:tok}))}catch(e){}return{id:String(r.id)}},
+ vote:(id,kind,w,why)=>j(A+'/'+id+'/vote',{method:'POST',body:JSON.stringify({kind,w,why})}),
+ doc:id=>({update:()=>Promise.resolve(),delete:()=>j(A+'/'+id,{method:'DELETE',headers:{'X-Token':K()[id]||''}})}),
+ onSnapshot:(cb,er)=>{const pull=async()=>{try{const r=await j(A);cb({docs:r.posts.map(x=>({id:String(x.id),data:()=>({...x.d,ts:Number(x.ts),flags:x.flags,ok:x.ok,why:x.why})}))})}catch(e){er&&er(e)}};pull();const t=setInterval(pull,20000);return()=>clearInterval(t)}}}
+(async()=>{try{let c;if(CFG.api)c=apiShim();else{const db=await claude.use('db');if(!db)return;c=db.collection('posts')}dbc=c;
+ c.onSnapshot(sn=>{const n=sn.docs.map(d=>({id:d.id,...d.data()}));notifyNew(n);posts=n;if(V.form)drawMap();else render()},()=>{dbc=null})}catch(e){}})();
+</script></body></html>
