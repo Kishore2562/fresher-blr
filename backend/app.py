@@ -1,4 +1,5 @@
 import os, re, time, json, hashlib, sqlite3
+from urllib.parse import urlparse
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
@@ -16,10 +17,31 @@ SQLITE_PATH = os.environ.get("SQLITE_PATH", "database/fresherblr.db")
 DAY_MS, TTL_DAYS = 86400000, 7
 SALT = os.environ.get("SALT", "change-me")
 TEXT = ["co", "role", "exp", "addr", "area", "apply", "name", "when", "cat", "mode"]
-ALLOWED = TEXT + ["type", "park", "size", "contact"]
+ALLOWED = TEXT + ["type", "park", "size", "contact", "link"]
 BAD = re.compile(r"https?:|www\.|\.(com|in|xyz|link)\b|bit\.ly|t\.me|telegram|whatsapp group|(fee|deposit|advance|security amount|registration charge)|earn\s*(rs|₹|\d)|₹\s?\d|\brs\.?\s?\d", re.I)
 PHONE = re.compile(r"^(\+91[\s-]?|0)?[6-9]\d{9}$")
 EMAIL = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]{2,}$")
+SHORT = {"bit.ly", "tinyurl.com", "t.co", "goo.gl", "cutt.ly", "rb.gy", "is.gd", "ow.ly", "t.me", "wa.me",
+         "telegram.me", "chat.whatsapp.com", "linktr.ee", "discord.gg"}
+
+
+def link_error(u):
+    if not u:
+        return ""
+    try:
+        x = urlparse(u)
+        h = (x.hostname or "").lower()
+    except ValueError:
+        return "Application link is not a valid web address."
+    if x.scheme != "https" or "." not in h or re.fullmatch(r"[\d.]+", h) or x.username or x.password:
+        return "Application link must be a full https:// address."
+    if h.removeprefix("www.") in SHORT:
+        return "Shortened and chat-group links are not allowed."
+    if re.search(r"(fee|deposit|payment|registration-?charge)", (x.path or "") + "?" + (x.query or ""), re.I):
+        return "Links that mention fees or payments are not allowed."
+    return ""
+
+
 hits = {}  # ip -> recent post times (keep ONE gunicorn worker so this stays accurate)
 DUP = (sqlite3.IntegrityError,) + ((pymysql.err.IntegrityError,) if pymysql else ())
 
@@ -87,7 +109,14 @@ def create_post():
     d, token = body.get("d"), str(body.get("token", ""))
     if not isinstance(d, dict) or d.get("type") not in ("park", "other", "co") or len(token) < 16:
         return err("Invalid post.")
+    if len(str(d.get("link", ""))) > 300:
+        return err("Application link is too long.")
     d = {k: str(d[k]).strip()[:300] for k in ALLOWED if k in d}
+    if d["type"] == "co":
+        d.pop("link", None)
+    e = link_error(d.get("link", ""))
+    if e:
+        return err(e)
     if len(d.get("co", "")) < 2:
         return err("Company name is required.")
     if BAD.search(" ".join(d.get(k, "") for k in TEXT)):
