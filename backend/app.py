@@ -17,7 +17,7 @@ SQLITE_PATH = os.environ.get("SQLITE_PATH", "database/fresherblr.db")
 DAY_MS, TTL_DAYS = 86400000, 7
 SALT = os.environ.get("SALT", "change-me")
 TEXT = ["co", "role", "exp", "addr", "area", "apply", "name", "when", "cat", "mode"]
-ALLOWED = TEXT + ["type", "park", "size", "contact", "link"]
+ALLOWED = TEXT + ["type", "park", "size", "contact", "link", "qual"]
 BAD = re.compile(r"https?:|www\.|\.(com|in|xyz|link)\b|bit\.ly|t\.me|telegram|whatsapp group|(fee|deposit|advance|security amount|registration charge)|earn\s*(rs|₹|\d)|₹\s?\d|\brs\.?\s?\d", re.I)
 PHONE = re.compile(r"^(\+91[\s-]?|0)?[6-9]\d{9}$")
 EMAIL = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]{2,}$")
@@ -42,6 +42,7 @@ def link_error(u):
     return ""
 
 
+QUAL = {"12th", "Any graduate", "B.Tech / MCA"}
 hits = {}  # ip -> recent post times (keep ONE gunicorn worker so this stays accurate)
 DUP = (sqlite3.IntegrityError,) + ((pymysql.err.IntegrityError,) if pymysql else ())
 
@@ -119,11 +120,16 @@ def create_post():
         return err(e)
     if len(d.get("co", "")) < 2:
         return err("Company name is required.")
+    if d["type"] != "co":
+        if len(d.get("role", "")) < 2:
+            return err("Position is required.")
+        if d.get("qual") not in QUAL:
+            return err("Select the qualification required.")
     if BAD.search(" ".join(d.get(k, "") for k in TEXT)):
         return err("Links, payment or fee-related wording are not allowed.")
     if d["type"] != "co":
         c = d.get("contact", "")
-        if not (EMAIL.match(c) or PHONE.match(re.sub(r"[\s-]", "", c))):
+        if c and not (EMAIL.match(c) or PHONE.match(re.sub(r"[\s-]", "", c))):
             return err("Enter a valid email or 10-digit Indian mobile number.")
     now = time.time()
     h = [t for t in hits.get(ip(), []) if now - t < 3600]
