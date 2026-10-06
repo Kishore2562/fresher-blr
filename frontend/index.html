@@ -67,14 +67,24 @@ body{height:100dvh}
  .row{padding:14px 12px}.chip.fc{padding:7px 12px;font-size:12px}.tiles b{font-size:20px}
  .pin circle.d,.pin:hover circle.d{r:7px}.pin.sel circle.d{r:9px}.pin text{font-size:11px}
 }
-@media(max-width:380px){#top [data-tg]{display:none}}
+#st{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0 8px;font-size:12px;color:var(--mut)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--mut);margin-right:6px}
+#st.ok .dot{background:var(--ok)}#st.off .dot{background:#d97706}#st.off{color:#b45309}#st.wait .dot{animation:sn 1.4s ease-out infinite}
+.hd{display:flex;justify-content:space-between;align-items:center;gap:8px}.hd>div:first-child{min-width:0}.hbtn{display:flex;gap:6px;flex:none}
+.ibtn{width:38px;height:38px;padding:0!important;display:grid;place-items:center;font-size:17px!important}
+.row b,.card b,h2,.sub,.chip{overflow-wrap:anywhere}#panel{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+@media(min-width:801px) and (max-width:1000px){body{grid-template-columns:1fr 380px}}
+@media(max-height:520px) and (orientation:landscape) and (max-width:1000px){body{grid-template-columns:1fr 1fr;grid-template-rows:none}#panel{margin-top:0;border-radius:0;border-top:0;border-left:1px solid var(--ln);box-shadow:none}}
+.ps{transform:scale(var(--k,1));transform-box:fill-box;transform-origin:center}
+.pin text{font-size:calc(7.5px*var(--k,1));stroke-width:calc(3px*var(--k,1))}.lbl{font-size:calc(6.5px*var(--k,1))}
+@media(max-width:800px){.pin text{font-size:calc(11px*var(--k,1))}}
 </style></head><body>
 <div id="map"><svg id="svg" viewBox="0 0 600 430" preserveAspectRatio="xMidYMid meet"><rect x="-600" y="-600" width="1800" height="1600" fill="var(--land)"/><g id="base"></g><g id="nodes"></g></svg><div id="note">Pin positions are approximate — use “Open in Maps” for the exact address. Pulsing pins have live openings.</div></div>
-<div id="panel"><div id="top"><div style="display:flex;justify-content:space-between;align-items:center"><div><div class="logo"><i></i>Fresher BLR</div><div class="sub" style="margin:0;font-size:12px">Jobs for freshers across Bengaluru</div></div><span><button class="btn gh" data-bell="1">🔔 Alerts</button> <button class="btn gh" data-tg="1">Light / Dark</button></span></div><div class="tabs"><button data-tab="parks">Tech Parks</button><button data-tab="other">City Jobs</button><button data-tab="saved">Saved</button></div></div><div id="bd"></div></div><div id="toast"></div>
+<div id="panel"><div id="top"><div class="hd"><div><div class="logo"><i></i>Fresher BLR</div><div class="sub" style="margin:0;font-size:12px">Jobs for freshers across Bengaluru</div></div><div class="hbtn"><button class="btn gh ibtn" data-bell="1" title="Alerts" aria-label="Alerts">🔔</button><button class="btn gh ibtn" data-tg="1" title="Light / Dark mode" aria-label="Toggle dark mode">🌓</button></div></div><div class="tabs"><button data-tab="parks">Tech Parks</button><button data-tab="other">City Jobs</button><button data-tab="saved">Saved</button></div><div id="st" class="wait"><span><i class="dot"></i><span id="stt">Connecting… the first load can take up to a minute</span></span><button class="btn gh" data-rf="1">↻ Refresh</button></div></div><div id="bd"></div></div><div id="toast"></div>
 <script>
 // PUBLIC MODE: put your Render backend URL in api (e.g. 'https://walkin-blr-api.onrender.com'). Leave site blank to use the page's own address.
 const CFG={api:'https://fresher-blr.onrender.com',site:''};
-const SITE=CFG.site||location.href;const RM=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches);
+const SITE=CFG.site||location.href;try{const th=localStorage.getItem('wb3theme');if(th)document.documentElement.dataset.theme=th}catch(e){}const RM=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches);
 // [id, name, location, lat, lng, companies ";"-separated, optional "|note"]. null lat = not pinned (location not confirmed).
 const SEED=[
 ["btp","Bagmane Tech Park","C.V. Raman Nagar",12.98,77.664,"Volvo;Dell;PwC;Cisco;Boeing;Nike;Informatica;Motorola;Micro Focus|now OpenText;Texas Instruments;Grant Thornton;Vivero;Infineon;Palo Alto Networks;Lam Research"],
@@ -107,7 +117,8 @@ SEED.forEach(s=>s[5]=s[5]?s[5].split(';').map(x=>{const[n,t]=x.split('|');return
 const CATS=["IT & Software","BPO & Customer Support","Internship / Trainee","Sales & Marketing","Banking & Finance","Retail & Shops","Hotels & Food","Healthcare","Education","Delivery & Logistics","Manufacturing","Security & Facility","Other"];
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const X=g=>(g-77.44)/.34*600,Y=t=>(13.08-t)/.22*430,SZ={S:"Small",M:"Medium",L:"Large"},DAY=864e5,TTL=7;
-const live=p=>(p.flags||0)<3&&(p.type=='co'||Date.now()-p.ts<TTL*DAY);
+let skew=0;const NOW=()=>Date.now()+skew;
+const live=p=>(p.flags||0)<3&&(p.type=='co'||NOW()-p.ts<TTL*DAY);
 let posts=[],V={tab:'parks',p:null,c:null,form:null,q:'',cat:'',zone:'',hot:false},flagged=new Set(),dbc=null,store=null;
 const sv=$('#svg'),pth=a=>'M'+a.map(([t,g])=>X(g).toFixed(0)+' '+Y(t).toFixed(0)).join('L');
 const road=(a,c='')=>`<g class="${c}"><path class="rd rc" d="${pth(a)}"/><path class="rd rf" d="${pth(a)}"/>${c?`<path class="rd fl" d="${pth(a)}"/>`:''}</g>`,blob=(t,g,rx,ry,f)=>`<ellipse cx="${X(g)}" cy="${Y(t)}" rx="${rx}" ry="${ry}" fill="var(${f})"/>`,tx=(t,g,s)=>`<text class="lbl" x="${X(g)}" y="${Y(t)}" text-anchor="middle">${s}</text>`;
@@ -119,13 +130,13 @@ const ORRD=pth([[13.04,77.59],[13.04,77.62],[13.01,77.7],[12.955,77.7],[12.93,77
 $('#base').innerHTML+=[0,-7,-14].map(b=>`<circle class="car" r="1.7"><animateMotion dur="21s" begin="${b}s" repeatCount="indefinite" path="${ORRD}"/></circle>`).join('');
 const zone=s=>s[3]==null?'Unpinned':s[4]<77.55?'West':s[3]>13.02?'North':s[4]>77.7&&s[3]>=12.95?'Whitefield / East':s[3]<12.95?'ORR South-East':'Central-East';
 let vb=[0,0,600,430],tg=vb;
-function tween(){vb=vb.map((v,i)=>v+(tg[i]-v)*.15);sv.setAttribute('viewBox',vb.join(' '));if(vb.some((v,i)=>Math.abs(v-tg[i])>.2))requestAnimationFrame(tween)}
+function tween(){vb=vb.map((v,i)=>v+(tg[i]-v)*.15);sv.setAttribute('viewBox',vb.join(' '));sv.style.setProperty('--k',(vb[2]/600).toFixed(3));if(vb.some((v,i)=>Math.abs(v-tg[i])>.2))requestAnimationFrame(tween)}
 function comps(pid){const s=SEED.find(x=>x[0]==pid),m=new Map();s[5].forEach(c=>m.set(c.n.toLowerCase(),c));
  posts.filter(p=>p.type!='other'&&p.park==pid&&live(p)).forEach(p=>{const k=p.co.toLowerCase();if(!m.has(k))m.set(k,{n:p.co,z:p.size||'',t:p.type=='co'?'added by user':''})});return[...m.values()]}
 const opens=(pid,co)=>posts.filter(p=>p.type=='park'&&p.park==pid&&p.co.toLowerCase()==co.toLowerCase()&&live(p));
 function drawMap(){const sel=V.tab=='parks'&&SEED.find(s=>s[0]==V.p);let h='';
  const intro=(drawMap.n=(drawMap.n||0)+1)==1;
- SEED.forEach((s,i)=>{if(s[3]==null)return;const hot=posts.some(p=>p.type=='park'&&p.park==s[0]&&live(p));h+=`<g class="pin ${sel==s?'sel':''}" data-p="${s[0]}" transform="translate(${X(s[4])},${Y(s[3])})"><circle r="16" fill="transparent"/>${hot||sel==s?'<circle class="ring" r="4.5"/>':''}<circle class="d ${intro?'in':''}" style="animation-delay:${i*45}ms" r="4.5"/><text x="8" y="-6">${esc(s[1])}</text></g>`});
+ SEED.forEach((s,i)=>{if(s[3]==null)return;const hot=posts.some(p=>p.type=='park'&&p.park==s[0]&&live(p));h+=`<g class="pin ${sel==s?'sel':''}" data-p="${s[0]}" transform="translate(${X(s[4])},${Y(s[3])})"><g class="ps"><circle r="16" fill="transparent"/>${hot||sel==s?'<circle class="ring" r="4.5"/>':''}<circle class="d ${intro?'in':''}" style="animation-delay:${i*45}ms" r="4.5"/></g><text x="8" y="-6">${esc(s[1])}</text></g>`});
  if(sel&&sel[3]!=null){const cs=comps(sel[0]),n1=Math.min(cs.length,9),ring=(arr,r,dir,dur)=>arr.length?`<circle r="${r}" fill="none" stroke="var(--ac)" stroke-width=".35" stroke-dasharray="1.5 2.5" opacity=".7"/><g>${RM?'':`<animateTransform attributeName="transform" type="rotate" from="0" to="${360*dir}" dur="${dur}s" repeatCount="indefinite"/>`}${arr.map((c,i)=>{const a=i/arr.length*6.283;return`<circle class="sat ${opens(sel[0],c.n).length?'hot':''} ${c.n===V.c?'act':''}" data-c="${esc(c.n)}" cx="${(r*Math.cos(a)).toFixed(1)}" cy="${(r*Math.sin(a)).toFixed(1)}" r="${c.z=='S'?2.4:c.z=='L'?3.4:2.9}" style="animation-delay:${i*40}ms"><title>${esc(c.n)}</title></circle>`}).join('')}</g>`:'';
   h+=`<g transform="translate(${X(sel[4])},${Y(sel[3])})">${ring(cs.slice(0,n1),14,1,40)}${ring(cs.slice(n1,n1+18),23,-1,60)}</g>`}
  $('#nodes').innerHTML=h;tg=sel&&sel[3]!=null?[X(sel[4])-45,Y(sel[3])-32,90,64.5]:[0,0,600,430];tween()}
@@ -137,10 +148,10 @@ const flagBtn=p=>{const sd=getSaved().includes(p.id),w=p.role+' at '+p.co+' ('+w
 const card=p=>`<div class="card"><b>${esc(p.role)}</b> <span class="chip">${esc(p.exp)}</span>${qc(p)}${p.mode?`<span class="chip">${esc(p.mode)}</span>`:''}<div class="sub" style="margin:2px 0 6px">${esc(p.co)} · ${esc(where(p))}</div>${p.when?`<p class="sub" style="margin:0 0 6px"><b>Walk-in:</b> ${esc(p.when)}</p>`:''}<p class="sub" style="margin:0 0 6px">Posted by ${esc(p.name||'an employee')} · ${age(p)}</p>${lnk(p)}${cta(p.contact)||(p.link?'':'<span class="sub">No contact details given</span>')}${flagBtn(p)}</div>`;
 function savedView(B){const ids=getSaved(),L=posts.filter(p=>ids.includes(p.id)&&live(p));B.innerHTML='<p class="sub">Openings you saved on this device.</p>'+(L.length?L.map(card).join(''):'<p class="sub">Nothing saved yet. Tap ☆ Save on any opening.</p>')}
 const when_=p=>new Date(p.ts).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'});
-const age=p=>{const d=Math.floor((Date.now()-p.ts)/DAY);return when_(p)+` (${d?d+'d ago':'today'}) · expires in ${Math.max(TTL-d,0)}d`};
+const age=p=>{const d=Math.floor((NOW()-p.ts)/DAY);return when_(p)+` (${d?d+'d ago':'today'}) · expires in ${Math.max(TTL-d,0)}d`};
 const lset=(k,a)=>{try{store.setItem(k,JSON.stringify(a))}catch(e){}},lget=k=>{try{return JSON.parse(store.getItem(k)||'[]')}catch(e){return[]}},voted=()=>lget('wb3v'),mine=()=>lget('wb3m');
 async function vote(id,kind,w,r){if(voted().includes(id))return toast('You have already voted on this post.');const p=posts.find(x=>x.id==id);if(!p)return;const f={[kind]:(p[kind]||0)+w};if(r)f.why=r;
- try{if(dbc&&dbc.vote)await dbc.vote(id,kind,w,r);else if(dbc)await dbc.doc(id).update(f);else{Object.assign(p,f);lset('wb3',posts)}lset('wb3v',[...voted(),id]);toast(kind=='ok'?'Thanks — marked as genuine.':'Thanks — marked as fake/spam. 3 marks hide a post.');render()}catch(e){toast(e&&e.message&&isNaN(e.message)?e.message:'Could not record right now.')}}
+ try{if(dbc&&dbc.vote){await dbc.vote(id,kind,w,r);Object.assign(p,f);dbc.pull&&dbc.pull()}else if(dbc)await dbc.doc(id).update(f);else{Object.assign(p,f);lset('wb3',posts)}lset('wb3v',[...voted(),id]);toast(kind=='ok'?'Thanks — marked as genuine.':'Thanks — marked as fake/spam. 3 marks hide a post.');render()}catch(e){toast(msg(e))}}
 function askReason(id){const d=document.createElement('div');d.id='dlg';d.innerHTML=`<div class="dbox"><b>Mark as fake / spam</b><p class="sub">What is wrong with this post?</p>${[['Fake company or role',1],['Asks for money or fees',3],['Wrong or unreachable contact',1],['Spam or duplicate',1],['Position already filled',1]].map(([r,w])=>`<button class="btn sec" data-why="${w}" data-id="${esc(id)}" data-r="${esc(r)}" style="margin-bottom:6px">${r}</button>`).join('')}<button class="btn gh" data-why="0">Cancel</button></div>`;document.body.appendChild(d)}
 const SAFE='<div class="warn"><b>Stay safe:</b> genuine employers never ask for money, deposits or “training fees”. Confirm the company’s presence and the interview details before you travel.</div>';
 function render(){
@@ -188,6 +199,9 @@ const QR={'12th':1,'Any graduate':2,'B.Tech / MCA':3},QK={1:'12th',2:'Graduate',
 const qok=p=>!V.q2||!p.qual||(QR[p.qual]||0)<=V.q2;
 const qc=p=>p.qual?`<span class="chip">${esc(p.qual)}</span>`:'';
 const qchips=()=>`<span class="sub" style="margin:0 2px 0 0;align-self:center">I have:</span>`+[1,2,3].map(n=>`<span class="chip fc ${V.q2==n?'on':''}" data-q2="${n}">${QK[n]}</span>`).join('');
+const msg=e=>e&&e.message&&!/fetch|abort|network|load failed/i.test(e.message)&&isNaN(e.message)?e.message:'Cannot reach the server. Please try again in a moment.';
+function setSt(s){const e=$('#st');if(!e)return;e.className=s;$('#stt').textContent=s=='ok'?'Live · updated '+new Date().toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit',second:'2-digit'}):s=='off'?'Can’t reach the server — retrying…':'Refreshing…'}
+function refresh(){if(V.form){drawMap();return}const pn=$('#panel'),y=pn.scrollTop,a=document.activeElement,q=a&&a.id=='q',ss=q?a.selectionStart:0;render();pn.scrollTop=y;if(q&&$('#q')){$('#q').focus();$('#q').setSelectionRange(ss,ss)}}
 const BAD=/https?:|www\.|\.(com|in|xyz|link)\b|bit\.ly|t\.me|telegram|whatsapp group|(fee|deposit|advance|security amount|registration charge)|earn\s*(rs|₹|\d)|₹\s?\d|\brs\.?\s?\d/i,PH=/^(\+91[\s-]?|0)?[6-9]\d{9}$/,EM=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 function check(o){const le=linkErr(o.link);if(le)return le;const t=[o.co,o.role,o.exp,o.addr,o.area,o.apply,o.name,o.when].filter(Boolean).join(' ');
  if(BAD.test(t))return'Links, payment or fee-related wording are not allowed — genuine openings never ask for money.';
@@ -197,10 +211,10 @@ function check(o){const le=linkErr(o.link);if(le)return le;const t=[o.co,o.role,
  if(posts.some(p=>live(p)&&p.type==o.type&&(p.co||'').toLowerCase()==o.co.toLowerCase()&&(p.role||'')==o.role&&(p.contact||'')==o.contact&&p.park==o.park))return'This opening is already posted.';
  let ts=[];try{ts=JSON.parse(store.getItem('wb3t')||'[]').filter(x=>Date.now()-x<36e5)}catch(e){}
  if(ts.length>=3)return'Limit reached: 3 posts per hour. Please try again later.';return''}
-async function save(o){o.ts=Date.now();o.flags=0;try{if(dbc){const r=await dbc.add(o);lset('wb3m',[...mine(),r.id])}else{o.id='l'+o.ts;posts.push(o);lset('wb3',posts);lset('wb3m',[...mine(),o.id])}
- try{const ts=JSON.parse(store.getItem('wb3t')||'[]').filter(x=>Date.now()-x<36e5);ts.push(Date.now());store.setItem('wb3t',JSON.stringify(ts))}catch(e){}}catch(e){toast(e&&e.message&&isNaN(e.message)?e.message:'Could not publish right now.');return false}return true}
+async function save(o){o.ts=Date.now();o.flags=0;try{if(dbc){const r=await dbc.add(o);o.id=String(r.id);lset('wb3m',[...mine(),o.id]);if(CFG.api){posts=[o,...posts];dbc.pull&&dbc.pull()}}else{o.id='l'+o.ts;posts.push(o);lset('wb3',posts);lset('wb3m',[...mine(),o.id])}
+ try{const ts=JSON.parse(store.getItem('wb3t')||'[]').filter(x=>Date.now()-x<36e5);ts.push(Date.now());store.setItem('wb3t',JSON.stringify(ts))}catch(e){}}catch(e){toast(msg(e));return false}return true}
 document.addEventListener('click',async e=>{
- const t=e.target.closest('[data-p],[data-c],[data-act],[data-flag],[data-tab],[data-zone],[data-hot],[data-save],[data-q2],[data-fr],[data-follow],[data-bell],[data-shr],[data-tg],[data-ok],[data-del],[data-why]');if(!t||t===document.documentElement)return;e.preventDefault();const d=t.dataset;
+ const t=e.target.closest('[data-p],[data-c],[data-act],[data-flag],[data-tab],[data-zone],[data-hot],[data-save],[data-q2],[data-fr],[data-follow],[data-bell],[data-shr],[data-tg],[data-rf],[data-ok],[data-del],[data-why]');if(!t||t===document.documentElement)return;e.preventDefault();const d=t.dataset;
  if(d.tab){V={tab:d.tab,p:null,c:null,form:null,q:'',cat:'',zone:'',hot:false}}
  else if(d.follow){let f=lget('wb3f');const on=!f.includes(d.follow);f=on?[...f,d.follow]:f.filter(x=>x!=d.follow);lset('wb3f',f);toast(on?'Following. You will be alerted about new openings here.':'Unfollowed.')}
  else if(d.bell){try{const r=await Notification.requestPermission();toast(r=='granted'?'Browser alerts on while this page is open.':'Alerts blocked — you will still see in-page alerts.')}catch(x){toast('Browser alerts are not supported here.')}return}
@@ -209,10 +223,11 @@ document.addEventListener('click',async e=>{
  else if(d.fr){V.fr=!V.fr}
  else if(d.zone!==undefined){V.zone=d.zone;V.hot=false}else if(d.hot){V.hot=!V.hot;V.zone=''}
  else if(d.save){let a=getSaved();a=a.includes(d.save)?a.filter(x=>x!=d.save):[...a,d.save];try{store.setItem('wb3s',JSON.stringify(a))}catch(x){toast('Saving is unavailable here.')}}
- else if(d.tg){const r=document.documentElement;r.dataset.theme=(r.dataset.theme||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))=='dark'?'light':'dark'}
+ else if(d.tg){const r=document.documentElement;r.dataset.theme=(r.dataset.theme||(window.matchMedia&&matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))=='dark'?'light':'dark';try{localStorage.setItem('wb3theme',r.dataset.theme)}catch(x){}}
+ else if(d.rf){if(dbc&&dbc.pull){setSt('wait');dbc.pull()}else render();toast('Refreshing…');return}
  else if(d.flag){askReason(d.flag);return}
  else if(d.ok){await vote(d.ok,'ok',1);return}
- else if(d.del){try{if(dbc)await dbc.doc(d.del).delete();else{posts=posts.filter(x=>x.id!=d.del);lset('wb3',posts)}toast('Your post was removed.');render()}catch(x){toast('Could not remove this post.')}return}
+ else if(d.del){try{if(dbc)await dbc.doc(d.del).delete();posts=posts.filter(x=>x.id!=d.del);if(!dbc)lset('wb3',posts);dbc&&dbc.pull&&dbc.pull();toast('Your post was removed.');render()}catch(x){toast('Could not remove this post.')}return}
  else if(d.why!==undefined){const dl=$('#dlg');if(dl)dl.remove();if(d.why!='0')await vote(d.id,'flags',+d.why,d.r);return}
  else if(d.act=='home'){V.p=V.c=null;V.q=''}else if(d.act=='park'){V.c=null}else if(d.act=='form'){V.form=V.tab=='other'?'other':'park'}else if(d.act=='coform'){V.form='co'}else if(d.act=='cancel'){V.form=null}
  else if(d.act=='submit'){const g=i=>{const n=$('#f-'+i);return n?n.value.trim():''},k=V.form;
@@ -224,16 +239,19 @@ document.addEventListener('click',async e=>{
  else if(d.p){V.tab='parks';V.p=d.p;V.c=null;V.form=null}else if(d.c){V.c=d.c;V.form=null}
  render()});
 document.addEventListener('change',e=>{if(e.target.id=='f-park'){V.p=e.target.value;$('#cl').innerHTML=comps(V.p).map(c=>`<option value="${esc(c.n)}">`).join('')}});
-try{store=window.localStorage;posts=JSON.parse(store.getItem('wb3')||'[]')}catch(e){}
+try{store=window.localStorage;if(!CFG.api)posts=JSON.parse(store.getItem('wb3')||'[]')}catch(e){}
+if(!CFG.api)$('#st').style.display='none';
 render();
 let known=null;
-function notifyNew(n){const ids=new Set(n.map(p=>p.id));if(known)n.filter(p=>!known.has(p.id)&&p.type!='co'&&live(p)).forEach(p=>{const f=lget('wb3f');if(!f.length||f.includes(p.park)){const m=`New opening: ${p.role} at ${p.co}`;toast(m);try{if(Notification.permission=='granted')new Notification('Fresher BLR',{body:m})}catch(e){}}});known=ids}
+function notifyNew(n){const ids=new Set(n.map(p=>p.id));if(known)n.filter(p=>!known.has(p.id)&&p.type!='co'&&live(p)&&!mine().includes(p.id)).forEach(p=>{const f=lget('wb3f');if(!f.length||f.includes(p.park)){const m=`New opening: ${p.role} at ${p.co}`;toast(m);try{if(Notification.permission=='granted')new Notification('Fresher BLR',{body:m})}catch(e){}}});known=ids}
 function apiShim(){const A=CFG.api.replace(/\/$/,'')+'/api/posts',K=()=>{try{return JSON.parse(store.getItem('wb3k')||'{}')}catch(e){return{}}};
- const j=async(u,o={})=>{const r=await fetch(u,{...o,headers:{'Content-Type':'application/json',...(o.headers||{})}});const b=await r.json().catch(()=>({}));if(!r.ok)throw new Error(b.error||String(r.status));return b};
- return{add:async o=>{const tok=(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now().toString(36)+'xxxxxxxx');const{ts,flags,...d}=o;const r=await j(A,{method:'POST',body:JSON.stringify({d,token:tok})});try{store.setItem('wb3k',JSON.stringify({...K(),[r.id]:tok}))}catch(e){}return{id:String(r.id)}},
+ const j=async(u,o={})=>{const ac=new AbortController(),t=setTimeout(()=>ac.abort(),70000);try{const r=await fetch(u,{...o,cache:'no-store',signal:ac.signal,headers:{'Content-Type':'application/json',...(o.headers||{})}});const b=await r.json().catch(()=>({}));if(!r.ok)throw new Error(b.error||String(r.status));return b}finally{clearTimeout(t)}};
+ let cb=null,er=null,busy=false;
+ const pull=async()=>{if(busy)return;busy=true;try{const r=await j(A);if(r.now)skew=r.now-Date.now();cb&&cb({docs:r.posts.map(x=>({id:String(x.id),data:()=>({...x.d,ts:Number(x.ts),flags:x.flags,ok:x.ok,why:x.why})}))});setSt('ok')}catch(e){setSt('off');er&&er(e)}finally{busy=false}};
+ return{pull,add:async o=>{const tok=(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now().toString(36)+'xxxxxxxx');const{ts,flags,...d}=o;const r=await j(A,{method:'POST',body:JSON.stringify({d,token:tok})});try{store.setItem('wb3k',JSON.stringify({...K(),[r.id]:tok}))}catch(e){}return{id:String(r.id)}},
  vote:(id,kind,w,why)=>j(A+'/'+id+'/vote',{method:'POST',body:JSON.stringify({kind,w,why})}),
  doc:id=>({update:()=>Promise.resolve(),delete:()=>j(A+'/'+id,{method:'DELETE',headers:{'X-Token':K()[id]||''}})}),
- onSnapshot:(cb,er)=>{const pull=async()=>{try{const r=await j(A);cb({docs:r.posts.map(x=>({id:String(x.id),data:()=>({...x.d,ts:Number(x.ts),flags:x.flags,ok:x.ok,why:x.why})}))})}catch(e){er&&er(e)}};pull();const t=setInterval(pull,20000);return()=>clearInterval(t)}}}
-(async()=>{try{let c;if(CFG.api)c=apiShim();else{const db=await claude.use('db');if(!db)return;c=db.collection('posts')}dbc=c;
- c.onSnapshot(sn=>{const n=sn.docs.map(d=>({id:d.id,...d.data()}));notifyNew(n);posts=n;if(V.form)drawMap();else render()},()=>{dbc=null})}catch(e){}})();
+ onSnapshot:(c,e)=>{cb=c;er=e;pull();setInterval(()=>{if(!document.hidden)pull()},CFG.poll||10000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)pull()});addEventListener('online',pull);addEventListener('focus',pull);return()=>{}}}}
+(async()=>{try{let c;if(CFG.api)c=apiShim();else{const db=await claude.use('db');if(!db)return;c=db.collection('posts')}dbc=c;let sig=null;
+ c.onSnapshot(sn=>{const n=sn.docs.map(d=>({id:d.id,...d.data()}));notifyNew(n);const ns=n.map(p=>[p.id,p.flags,p.ok,p.why].join()).join('|');if(ns===sig)return;sig=ns;posts=n;refresh()},()=>{})}catch(e){}})();
 </script></body></html>

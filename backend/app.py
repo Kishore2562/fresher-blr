@@ -9,7 +9,8 @@ except ImportError:  # only needed if you later switch to MySQL
     pymysql = None
 
 app = Flask(__name__)
-CORS(app, origins=os.environ.get("ALLOWED_ORIGIN", "*").split(","))
+ORIGINS = [o.strip().rstrip("/") for o in os.environ.get("ALLOWED_ORIGIN", "*").split(",") if o.strip()] or ["*"]
+CORS(app, origins=ORIGINS)
 
 # Default = SQLite file (no setup needed). If DB_HOST is set, MySQL is used instead.
 MYSQL = bool(os.environ.get("DB_HOST"))
@@ -51,7 +52,7 @@ def connect():
     if MYSQL:
         kw = dict(host=os.environ["DB_HOST"], user=os.environ["DB_USER"], password=os.environ["DB_PASSWORD"],
                   database=os.environ["DB_NAME"], port=int(os.environ.get("DB_PORT", 3306)),
-                  cursorclass=pymysql.cursors.DictCursor)
+                  cursorclass=pymysql.cursors.DictCursor, connect_timeout=10)
         if os.environ.get("DB_SSL"):
             kw["ssl"] = {"fake_flag_to_enable_tls": True}
         return pymysql.connect(**kw)
@@ -89,6 +90,15 @@ def err(msg, code=400):
     return jsonify(error=msg), code
 
 
+@app.errorhandler(Exception)
+def oops(e):
+    from werkzeug.exceptions import HTTPException
+    if isinstance(e, HTTPException):
+        return jsonify(error=e.description), e.code
+    print("ERROR:", repr(e))
+    return jsonify(error="Server error. Please try again."), 500
+
+
 @app.get("/")
 def health():
     return "Fresher BLR API is running (" + ("MySQL" if MYSQL else "SQLite") + ")"
@@ -101,7 +111,9 @@ def list_posts():
                (now - TTL_DAYS * DAY_MS,), fetch=True)
     for r in rows:
         r["d"] = json.loads(r["d"])
-    return jsonify(posts=rows)
+    resp = jsonify(posts=rows, now=int(time.time() * 1000))
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
 
 
 @app.post("/api/posts")
