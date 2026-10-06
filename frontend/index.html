@@ -78,9 +78,10 @@ body{height:100dvh}
 .ps{transform:scale(var(--k,1));transform-box:fill-box;transform-origin:center}
 .pin text{font-size:calc(7.5px*var(--k,1));stroke-width:calc(3px*var(--k,1))}.lbl{font-size:calc(6.5px*var(--k,1))}
 @media(max-width:800px){.pin text{font-size:calc(11px*var(--k,1))}}
+#ptr{height:0;overflow:hidden;text-align:center;font-size:12px;font-weight:600;color:var(--mut);display:flex;align-items:center;justify-content:center}html,body{overscroll-behavior-y:contain}
 </style></head><body>
 <div id="map"><svg id="svg" viewBox="0 0 600 430" preserveAspectRatio="xMidYMid meet"><rect x="-600" y="-600" width="1800" height="1600" fill="var(--land)"/><g id="base"></g><g id="nodes"></g></svg><div id="note">Pin positions are approximate — use “Open in Maps” for the exact address. Pulsing pins have live openings.</div></div>
-<div id="panel"><div id="top"><div class="hd"><div><div class="logo"><i></i>Fresher BLR</div><div class="sub" style="margin:0;font-size:12px">Jobs for freshers across Bengaluru</div></div><div class="hbtn"><button class="btn gh ibtn" data-bell="1" title="Alerts" aria-label="Alerts">🔔</button><button class="btn gh ibtn" data-tg="1" title="Light / Dark mode" aria-label="Toggle dark mode">🌓</button></div></div><div class="tabs"><button data-tab="parks">Tech Parks</button><button data-tab="other">City Jobs</button><button data-tab="saved">Saved</button></div><div id="st" class="wait"><span><i class="dot"></i><span id="stt">Connecting… the first load can take up to a minute</span></span><button class="btn gh" data-rf="1">↻ Refresh</button></div></div><div id="bd"></div></div><div id="toast"></div>
+<div id="panel"><div id="top"><div class="hd"><div><div class="logo"><i></i>Fresher BLR</div><div class="sub" style="margin:0;font-size:12px">Jobs for freshers across Bengaluru</div></div><div class="hbtn"><button class="btn gh ibtn" data-bell="1" title="Alerts" aria-label="Alerts">🔔</button><button class="btn gh ibtn" data-tg="1" title="Light / Dark mode" aria-label="Toggle dark mode">🌓</button></div></div><div class="tabs"><button data-tab="parks">Tech Parks</button><button data-tab="other">City Jobs</button><button data-tab="saved">Saved</button></div><div id="st" class="wait"><span><i class="dot"></i><span id="stt">Connecting… the first load can take up to a minute</span></span><button class="btn gh" data-rf="1">↻ Refresh</button></div></div><div id="ptr"></div><div id="bd"></div></div><div id="toast"></div>
 <script>
 // PUBLIC MODE: put your Render backend URL in api (e.g. 'https://walkin-blr-api.onrender.com'). Leave site blank to use the page's own address.
 const CFG={api:'https://fresher-blr.onrender.com',site:''};
@@ -200,7 +201,7 @@ const qok=p=>!V.q2||!p.qual||(QR[p.qual]||0)<=V.q2;
 const qc=p=>p.qual?`<span class="chip">${esc(p.qual)}</span>`:'';
 const qchips=()=>`<span class="sub" style="margin:0 2px 0 0;align-self:center">I have:</span>`+[1,2,3].map(n=>`<span class="chip fc ${V.q2==n?'on':''}" data-q2="${n}">${QK[n]}</span>`).join('');
 const msg=e=>e&&e.message&&!/fetch|abort|network|load failed/i.test(e.message)&&isNaN(e.message)?e.message:'Cannot reach the server. Please try again in a moment.';
-function setSt(s){const e=$('#st');if(!e)return;e.className=s;$('#stt').textContent=s=='ok'?'Live · updated '+new Date().toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit',second:'2-digit'}):s=='off'?'Can’t reach the server — retrying…':'Refreshing…'}
+function setSt(s,x){const e=$('#st');if(!e)return;e.className=s;$('#stt').textContent=s=='ok'?'Live · updated '+new Date().toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit',second:'2-digit'}):s=='off'?'Can’t reach the server — retrying…'+(x?(x.http?` (server error ${x.http}${x.code?' · '+x.code:''})`:' (no response: blocked or server asleep)'):''):'Refreshing…'}
 function refresh(){if(V.form){drawMap();return}const pn=$('#panel'),y=pn.scrollTop,a=document.activeElement,q=a&&a.id=='q',ss=q?a.selectionStart:0;render();pn.scrollTop=y;if(q&&$('#q')){$('#q').focus();$('#q').setSelectionRange(ss,ss)}}
 const BAD=/https?:|www\.|\.(com|in|xyz|link)\b|bit\.ly|t\.me|telegram|whatsapp group|(fee|deposit|advance|security amount|registration charge)|earn\s*(rs|₹|\d)|₹\s?\d|\brs\.?\s?\d/i,PH=/^(\+91[\s-]?|0)?[6-9]\d{9}$/,EM=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 function check(o){const le=linkErr(o.link);if(le)return le;const t=[o.co,o.role,o.exp,o.addr,o.area,o.apply,o.name,o.when].filter(Boolean).join(' ');
@@ -224,7 +225,7 @@ document.addEventListener('click',async e=>{
  else if(d.zone!==undefined){V.zone=d.zone;V.hot=false}else if(d.hot){V.hot=!V.hot;V.zone=''}
  else if(d.save){let a=getSaved();a=a.includes(d.save)?a.filter(x=>x!=d.save):[...a,d.save];try{store.setItem('wb3s',JSON.stringify(a))}catch(x){toast('Saving is unavailable here.')}}
  else if(d.tg){const r=document.documentElement;r.dataset.theme=(r.dataset.theme||(window.matchMedia&&matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))=='dark'?'light':'dark';try{localStorage.setItem('wb3theme',r.dataset.theme)}catch(x){}}
- else if(d.rf){if(dbc&&dbc.pull){setSt('wait');dbc.pull()}else render();toast('Refreshing…');return}
+ else if(d.rf){doRefresh();return}
  else if(d.flag){askReason(d.flag);return}
  else if(d.ok){await vote(d.ok,'ok',1);return}
  else if(d.del){try{if(dbc)await dbc.doc(d.del).delete();posts=posts.filter(x=>x.id!=d.del);if(!dbc)lset('wb3',posts);dbc&&dbc.pull&&dbc.pull();toast('Your post was removed.');render()}catch(x){toast('Could not remove this post.')}return}
@@ -242,12 +243,19 @@ document.addEventListener('change',e=>{if(e.target.id=='f-park'){V.p=e.target.va
 try{store=window.localStorage;if(!CFG.api)posts=JSON.parse(store.getItem('wb3')||'[]')}catch(e){}
 if(!CFG.api)$('#st').style.display='none';
 render();
+let lastRef=0;function doRefresh(){lastRef=Date.now();if(dbc&&dbc.pull){setSt('wait');dbc.pull()}else render();toast('Refreshing…')}
+(()=>{const pn=$('#panel'),pt=$('#ptr');let y0=0,dy=0,on=false;
+ pn.addEventListener('touchstart',e=>{on=pn.scrollTop<=0&&e.touches.length==1;y0=e.touches[0].clientY;dy=0},{passive:true});
+ pn.addEventListener('touchmove',e=>{if(!on)return;dy=e.touches[0].clientY-y0;if(dy>0){pt.style.height=Math.min(dy/2,56)+'px';pt.textContent=dy>100?'↓ Release to refresh':'↓ Pull down to refresh'}else{on=false;pt.style.height='0'}},{passive:true});
+ pn.addEventListener('touchend',()=>{if(on&&dy>100)doRefresh();pt.style.height='0';on=false},{passive:true});
+ pn.addEventListener('wheel',e=>{if(pn.scrollTop<=0&&e.deltaY<-30&&Date.now()-lastRef>4000)doRefresh()},{passive:true});
+})();
 let known=null;
 function notifyNew(n){const ids=new Set(n.map(p=>p.id));if(known)n.filter(p=>!known.has(p.id)&&p.type!='co'&&live(p)&&!mine().includes(p.id)).forEach(p=>{const f=lget('wb3f');if(!f.length||f.includes(p.park)){const m=`New opening: ${p.role} at ${p.co}`;toast(m);try{if(Notification.permission=='granted')new Notification('Fresher BLR',{body:m})}catch(e){}}});known=ids}
 function apiShim(){const A=CFG.api.replace(/\/$/,'')+'/api/posts',K=()=>{try{return JSON.parse(store.getItem('wb3k')||'{}')}catch(e){return{}}};
- const j=async(u,o={})=>{const ac=new AbortController(),t=setTimeout(()=>ac.abort(),70000);try{const r=await fetch(u,{...o,cache:'no-store',signal:ac.signal,headers:{'Content-Type':'application/json',...(o.headers||{})}});const b=await r.json().catch(()=>({}));if(!r.ok)throw new Error(b.error||String(r.status));return b}finally{clearTimeout(t)}};
+ const j=async(u,o={})=>{const ac=new AbortController(),t=setTimeout(()=>ac.abort(),70000);try{const r=await fetch(u,{...o,cache:'no-store',signal:ac.signal,headers:{'Content-Type':'application/json',...(o.headers||{})}});const b=await r.json().catch(()=>({}));if(!r.ok){const x=new Error(b.error||String(r.status));x.http=r.status;x.code=b.code;throw x}return b}finally{clearTimeout(t)}};
  let cb=null,er=null,busy=false;
- const pull=async()=>{if(busy)return;busy=true;try{const r=await j(A);if(r.now)skew=r.now-Date.now();cb&&cb({docs:r.posts.map(x=>({id:String(x.id),data:()=>({...x.d,ts:Number(x.ts),flags:x.flags,ok:x.ok,why:x.why})}))});setSt('ok')}catch(e){setSt('off');er&&er(e)}finally{busy=false}};
+ const pull=async()=>{if(busy)return;busy=true;try{const r=await j(A);if(r.now)skew=r.now-Date.now();cb&&cb({docs:r.posts.map(x=>({id:String(x.id),data:()=>({...x.d,ts:Number(x.ts),flags:x.flags,ok:x.ok,why:x.why})}))});setSt('ok')}catch(e){setSt('off',e);er&&er(e)}finally{busy=false}};
  return{pull,add:async o=>{const tok=(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now().toString(36)+'xxxxxxxx');const{ts,flags,...d}=o;const r=await j(A,{method:'POST',body:JSON.stringify({d,token:tok})});try{store.setItem('wb3k',JSON.stringify({...K(),[r.id]:tok}))}catch(e){}return{id:String(r.id)}},
  vote:(id,kind,w,why)=>j(A+'/'+id+'/vote',{method:'POST',body:JSON.stringify({kind,w,why})}),
  doc:id=>({update:()=>Promise.resolve(),delete:()=>j(A+'/'+id,{method:'DELETE',headers:{'X-Token':K()[id]||''}})}),

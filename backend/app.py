@@ -9,7 +9,9 @@ except ImportError:  # only needed if you later switch to MySQL
     pymysql = None
 
 app = Flask(__name__)
-ORIGINS = [o.strip().rstrip("/") for o in os.environ.get("ALLOWED_ORIGIN", "*").split(",") if o.strip()] or ["*"]
+# Open CORS by default (the API is public and uses no cookies). Set STRICT_CORS=1 + ALLOWED_ORIGIN to restrict.
+ORIGINS = ([o.strip().rstrip("/") for o in os.environ.get("ALLOWED_ORIGIN", "").split(",") if o.strip()]
+           if os.environ.get("STRICT_CORS") == "1" else []) or ["*"]
 CORS(app, origins=ORIGINS)
 
 # Default = SQLite file (no setup needed). If DB_HOST is set, MySQL is used instead.
@@ -81,6 +83,16 @@ def init():
     run("CREATE TABLE IF NOT EXISTS votes(post_id INT NOT NULL, ip CHAR(64) NOT NULL, PRIMARY KEY(post_id, ip))")
 
 
+ready = False
+
+
+def ensure():
+    global ready
+    if not ready:
+        init()
+        ready = True
+
+
 def ip():
     raw = request.headers.get("X-Forwarded-For", request.remote_addr or "").split(",")[0].strip()
     return hashlib.sha256((SALT + raw).encode()).hexdigest()
@@ -96,7 +108,8 @@ def oops(e):
     if isinstance(e, HTTPException):
         return jsonify(error=e.description), e.code
     print("ERROR:", repr(e))
-    return jsonify(error="Server error. Please try again."), 500
+    code = type(e).__name__ + (":" + str(e.args[0]) if e.args and isinstance(e.args[0], int) else "")
+    return jsonify(error="Server error. Please try again.", code=code), 500
 
 
 @app.get("/")
@@ -104,8 +117,16 @@ def health():
     return "Fresher BLR API is running (" + ("MySQL" if MYSQL else "SQLite") + ")"
 
 
+@app.get("/api/health")
+def db_health():
+    ensure()
+    run("SELECT 1", fetch=True)
+    return jsonify(db="ok", engine="MySQL" if MYSQL else "SQLite")
+
+
 @app.get("/api/posts")
 def list_posts():
+    ensure()
     now = int(time.time() * 1000)
     rows = run("SELECT id, ts, flags, ok, why, d FROM posts WHERE ts > ? OR kind='co' ORDER BY ts DESC LIMIT 500",
                (now - TTL_DAYS * DAY_MS,), fetch=True)
@@ -118,6 +139,7 @@ def list_posts():
 
 @app.post("/api/posts")
 def create_post():
+    ensure()
     body = request.get_json(silent=True) or {}
     d, token = body.get("d"), str(body.get("token", ""))
     if not isinstance(d, dict) or d.get("type") not in ("park", "other", "co") or len(token) < 16:
@@ -155,6 +177,7 @@ def create_post():
 
 @app.post("/api/posts/<int:pid>/vote")
 def vote(pid):
+    ensure()
     b = request.get_json(silent=True) or {}
     kind = b.get("kind")
     if kind not in ("flags", "ok"):
@@ -176,6 +199,7 @@ def vote(pid):
 
 @app.delete("/api/posts/<int:pid>")
 def remove(pid):
+    ensure()
     tok = hashlib.sha256(request.headers.get("X-Token", "").encode()).hexdigest()
     _, n = run("DELETE FROM posts WHERE id=? AND owner=?", (pid, tok))
     return (jsonify(ok=True), 200) if n else err("Not allowed.", 403)
@@ -183,6 +207,7 @@ def remove(pid):
 
 try:
     init()
+    ready = True
 except Exception as e:
     print("DB init failed:", e)
 
