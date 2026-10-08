@@ -8,7 +8,7 @@ try:
 except ImportError:  # only needed if you later switch to MySQL
     pymysql = None
 
-VERSION = "v6"
+VERSION = "v7"
 app = Flask(__name__)
 # Open CORS by default (the API is public and uses no cookies). Set STRICT_CORS=1 + ALLOWED_ORIGIN to restrict.
 ORIGINS = ([o.strip().rstrip("/") for o in os.environ.get("ALLOWED_ORIGIN", "").split(",") if o.strip()]
@@ -52,25 +52,50 @@ hits = {}  # ip -> recent post times (keep ONE gunicorn worker so this stays acc
 DUP = (sqlite3.IntegrityError,) + ((pymysql.err.IntegrityError,) if pymysql else ())
 
 
+mysql_state = {"down_until": 0.0, "err": ""}
+inited = set()
+
+
 def connect():
-    if MYSQL:
-        kw = dict(host=os.environ["DB_HOST"], user=os.environ["DB_USER"], password=os.environ["DB_PASSWORD"],
-                  database=os.environ["DB_NAME"], port=int(os.environ.get("DB_PORT", 3306)),
-                  cursorclass=pymysql.cursors.DictCursor, connect_timeout=10)
-        if os.environ.get("DB_SSL"):
-            kw["ssl"] = {"fake_flag_to_enable_tls": True}
-        return pymysql.connect(**kw)
+    """MySQL when it is reachable; otherwise a temporary SQLite file so the site keeps working."""
+    if MYSQL and time.time() >= mysql_state["down_until"]:
+        try:
+            kw = dict(host=os.environ["DB_HOST"], user=os.environ["DB_USER"], password=os.environ["DB_PASSWORD"],
+                      database=os.environ["DB_NAME"], port=int(os.environ.get("DB_PORT", 3306)),
+                      cursorclass=pymysql.cursors.DictCursor, connect_timeout=8)
+            if os.environ.get("DB_SSL"):
+                kw["ssl"] = {"fake_flag_to_enable_tls": True}
+            con = pymysql.connect(**kw)
+            mysql_state["err"] = ""
+            return con
+        except Exception as e:
+            mysql_state["err"] = (type(e).__name__ + ": " + str(e))[:200]
+            mysql_state["down_until"] = time.time() + 20
+            app.logger.warning("MySQL unreachable, using temporary SQLite: %s", e)
     os.makedirs(os.path.dirname(SQLITE_PATH) or ".", exist_ok=True)
     con = sqlite3.connect(SQLITE_PATH)
     con.row_factory = sqlite3.Row
     return con
 
 
+def make_tables(con, sq):
+    pk = "INTEGER PRIMARY KEY AUTOINCREMENT" if sq else "INT AUTO_INCREMENT PRIMARY KEY"
+    cur = con.cursor()
+    cur.execute(f"""CREATE TABLE IF NOT EXISTS posts(id {pk}, ts BIGINT NOT NULL, kind VARCHAR(10),
+            flags INT DEFAULT 0, ok INT DEFAULT 0, why VARCHAR(100), owner CHAR(64), d TEXT NOT NULL)""")
+    cur.execute("CREATE TABLE IF NOT EXISTS votes(post_id INT NOT NULL, ip CHAR(64) NOT NULL, PRIMARY KEY(post_id, ip))")
+    con.commit()
+
+
 def run(sql, args=(), fetch=False):
     con = connect()
     try:
+        sq = isinstance(con, sqlite3.Connection)
+        if sq not in inited:
+            make_tables(con, sq)
+            inited.add(sq)
         cur = con.cursor()
-        cur.execute(sql.replace("?", "%s") if MYSQL else sql, args)
+        cur.execute(sql if sq else sql.replace("?", "%s"), args)
         rows = [dict(r) for r in cur.fetchall()] if fetch else None
         con.commit()
         return rows if fetch else (cur.lastrowid, cur.rowcount)
@@ -78,21 +103,14 @@ def run(sql, args=(), fetch=False):
         con.close()
 
 
-def init():
-    pk = "INT AUTO_INCREMENT PRIMARY KEY" if MYSQL else "INTEGER PRIMARY KEY AUTOINCREMENT"
-    run(f"""CREATE TABLE IF NOT EXISTS posts(id {pk}, ts BIGINT NOT NULL, kind VARCHAR(10),
-            flags INT DEFAULT 0, ok INT DEFAULT 0, why VARCHAR(100), owner CHAR(64), d TEXT NOT NULL)""")
-    run("CREATE TABLE IF NOT EXISTS votes(post_id INT NOT NULL, ip CHAR(64) NOT NULL, PRIMARY KEY(post_id, ip))")
-
-
-ready = False
+def engine():
+    if not MYSQL:
+        return "SQLite"
+    return "MySQL" if not mysql_state["err"] else "SQLite (TEMPORARY fallback - MySQL is unreachable, posts may be lost)"
 
 
 def ensure():
-    global ready
-    if not ready:
-        init()
-        ready = True
+    pass
 
 
 def ip():
@@ -116,8 +134,12 @@ def oops(e):
 
 @app.get("/")
 def health():
+    try:
+        run("SELECT 1", fetch=True)  # tries MySQL first, so the text below is truthful
+    except Exception:
+        pass
     base = request.headers.get("X-Forwarded-Proto", "http") + "://" + request.host
-    return (f"Fresher BLR API {VERSION} is running ({'MySQL' if MYSQL else 'SQLite'})\n"
+    return (f"Fresher BLR API {VERSION} is running ({engine()})\n"
             f"Database check: {base}/api/health\nJobs list: {base}/api/posts\n"), 200, {"Content-Type": "text/plain; charset=utf-8"}
 
 
@@ -125,7 +147,8 @@ def health():
 def db_health():
     ensure()
     run("SELECT 1", fetch=True)
-    return jsonify(db="ok", engine="MySQL" if MYSQL else "SQLite", v=VERSION)
+    bad = bool(MYSQL and mysql_state["err"])
+    return jsonify(db="fallback" if bad else "ok", engine=engine(), mysql_error=mysql_state["err"] or None, v=VERSION)
 
 
 @app.get("/api/posts")
@@ -214,12 +237,6 @@ def remove(pid):
     cache["v"] = None
     return (jsonify(ok=True), 200) if n else err("Not allowed.", 403)
 
-
-try:
-    init()
-    ready = True
-except Exception as e:
-    print("DB init failed:", e)
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

@@ -79,9 +79,11 @@ body{height:100dvh}
 .pin text{font-size:calc(7.5px*var(--k,1));stroke-width:calc(3px*var(--k,1))}.lbl{font-size:calc(6.5px*var(--k,1))}
 @media(max-width:800px){.pin text{font-size:calc(11px*var(--k,1))}}
 #ptr{height:0;overflow:hidden;text-align:center;font-size:12px;font-weight:600;color:var(--mut);display:flex;align-items:center;justify-content:center}html,body{overscroll-behavior-y:contain}
+#ptr{transition:height .18s ease;background:var(--pn)}.spin{width:16px;height:16px;border:2px solid var(--ln);border-top-color:var(--ac);border-radius:50%;animation:rot .7s linear infinite;display:inline-block;margin-right:8px}@keyframes rot{to{transform:rotate(360deg)}}
+.arr{display:inline-block;margin-right:8px;transition:transform .2s;font-size:14px}.arr.up{transform:rotate(180deg)}
 </style></head><body>
 <div id="map"><svg id="svg" viewBox="0 0 600 430" preserveAspectRatio="xMidYMid meet"><rect x="-600" y="-600" width="1800" height="1600" fill="var(--land)"/><g id="base"></g><g id="nodes"></g></svg><div id="note">Pin positions are approximate — use “Open in Maps” for the exact address. Pulsing pins have live openings.</div></div>
-<div id="panel"><div id="top"><div class="hd"><div><div class="logo"><i></i>Fresher BLR</div><div class="sub" style="margin:0;font-size:12px">Jobs for freshers across Bengaluru</div></div><div class="hbtn"><button class="btn gh ibtn" data-bell="1" title="Alerts" aria-label="Alerts">🔔</button><button class="btn gh ibtn" data-tg="1" title="Light / Dark mode" aria-label="Toggle dark mode">🌓</button></div></div><div class="tabs"><button data-tab="parks">Tech Parks</button><button data-tab="other">City Jobs</button><button data-tab="saved">Saved</button></div><div id="st" class="wait"><span><i class="dot"></i><span id="stt">Loading the latest jobs… the first load can take up to a minute</span></span></div></div><div id="ptr"></div><div id="bd"></div></div><div id="toast"></div>
+<div id="panel"><div id="top"><div class="hd"><div><div class="logo"><i></i>Fresher BLR</div><div class="sub" style="margin:0;font-size:12px">Jobs for freshers across Bengaluru</div></div><div class="hbtn"><button class="btn gh ibtn" data-bell="1" title="Alerts" aria-label="Alerts">🔔</button><button class="btn gh ibtn" data-tg="1" title="Light / Dark mode" aria-label="Toggle dark mode">🌓</button></div></div><div class="tabs"><button data-tab="parks">Tech Parks</button><button data-tab="other">City Jobs</button><button data-tab="saved">Saved</button></div></div><div id="ptr"></div><div id="bd"></div></div><div id="toast"></div>
 <script>
 // PUBLIC MODE: put your Render backend URL in api (e.g. 'https://walkin-blr-api.onrender.com'). Leave site blank to use the page's own address.
 const CFG={api:'https://fresher-blr.onrender.com',site:''};
@@ -241,14 +243,21 @@ document.addEventListener('click',async e=>{
  render()});
 document.addEventListener('change',e=>{if(e.target.id=='f-park'){V.p=e.target.value;$('#cl').innerHTML=comps(V.p).map(c=>`<option value="${esc(c.n)}">`).join('')}});
 try{store=window.localStorage;if(!CFG.api)posts=JSON.parse(store.getItem('wb3')||'[]')}catch(e){}
-if(!CFG.api)$('#st').style.display='none';
 render();
-let lastRef=0;function doRefresh(){lastRef=Date.now();if(dbc&&dbc.pull){setSt('wait');dbc.pull()}else render();toast('Refreshing…')}
-(()=>{const pn=$('#panel'),pt=$('#ptr');let y0=0,dy=0,on=false;
- pn.addEventListener('touchstart',e=>{on=pn.scrollTop<=0&&e.touches.length==1;y0=e.touches[0].clientY;dy=0},{passive:true});
- pn.addEventListener('touchmove',e=>{if(!on)return;dy=e.touches[0].clientY-y0;if(dy>0){pt.style.height=Math.min(dy/2,56)+'px';pt.textContent=dy>100?'↓ Release to refresh':'↓ Pull down to refresh'}else{on=false;pt.style.height='0'}},{passive:true});
- pn.addEventListener('touchend',()=>{if(on&&dy>100)doRefresh();pt.style.height='0';on=false},{passive:true});
- pn.addEventListener('wheel',e=>{if(pn.scrollTop<=0&&e.deltaY<-30&&Date.now()-lastRef>4000)doRefresh()},{passive:true});
+let lastRef=0;const SP='<span class="spin"></span>';
+function ptr(h,html){const p=$('#ptr');if(p){p.style.height=h+'px';p.innerHTML=html||''}}
+async function doRefresh(){lastRef=Date.now();ptr(48,SP+'Refreshing…');try{if(dbc&&dbc.pull)await dbc.pull();else render()}catch(e){}await new Promise(r=>setTimeout(r,350));ptr(0,'')}
+if(CFG.api)ptr(44,SP+'Loading jobs…');
+(()=>{const pn=$('#panel');let y0=0,dy=0,on=false,busy=false,md=false;
+ const start=y=>{on=!busy&&pn.scrollTop<=0;y0=y;dy=0};
+ const move=y=>{if(!on)return;dy=y-y0;if(dy>0)ptr(Math.min(dy*.5,64),dy>90?'<span class="arr up">↓</span>Release to refresh':'<span class="arr">↓</span>Pull down to refresh');else{on=false;ptr(0,'')}};
+ const end=async()=>{if(!on)return;on=false;if(dy>90){busy=true;await doRefresh();busy=false}else ptr(0,'')};
+ pn.addEventListener('touchstart',e=>start(e.touches[0].clientY),{passive:true});
+ pn.addEventListener('touchmove',e=>move(e.touches[0].clientY),{passive:true});
+ pn.addEventListener('touchend',end,{passive:true});pn.addEventListener('touchcancel',end,{passive:true});
+ pn.addEventListener('mousedown',e=>{if(e.button||e.target.closest('button,a,input,select,textarea,.row,.card'))return;md=true;start(e.clientY)});
+ addEventListener('mousemove',e=>{if(md)move(e.clientY)});addEventListener('mouseup',()=>{if(md){md=false;end()}});
+ pn.addEventListener('wheel',e=>{if(pn.scrollTop<=0&&e.deltaY<-30&&!busy&&Date.now()-lastRef>4000)doRefresh()},{passive:true});
 })();
 let known=null;
 function notifyNew(n){const ids=new Set(n.map(p=>p.id));if(known)n.filter(p=>!known.has(p.id)&&p.type!='co'&&live(p)&&!mine().includes(p.id)).forEach(p=>{const f=lget('wb3f');if(!f.length||f.includes(p.park)){const m=`New opening: ${p.role} at ${p.co}`;toast(m);try{if(Notification.permission=='granted')new Notification('Fresher BLR',{body:m})}catch(e){}}});known=ids}
@@ -261,5 +270,5 @@ function apiShim(){const A=CFG.api.replace(/\/$/,'')+'/api/posts',K=()=>{try{ret
  doc:id=>({update:()=>Promise.resolve(),delete:()=>j(A+'/'+id,{method:'DELETE',headers:{'X-Token':K()[id]||''}})}),
  onSnapshot:(c,e)=>{cb=c;er=e;pull();setInterval(()=>{if(!document.hidden)pull()},CFG.poll||10000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)pull()});addEventListener('online',pull);addEventListener('focus',pull);return()=>{}}}}
 (async()=>{try{let c;if(CFG.api)c=apiShim();else{const db=await claude.use('db');if(!db)return;c=db.collection('posts')}dbc=c;let sig=null;
- c.onSnapshot(sn=>{const n=sn.docs.map(d=>({id:d.id,...d.data()}));notifyNew(n);const ns=n.map(p=>[p.id,p.flags,p.ok,p.why].join()).join('|');if(ns===sig)return;sig=ns;posts=n;refresh()},()=>{})}catch(e){}})();
+ c.onSnapshot(sn=>{ptr(0,'');const n=sn.docs.map(d=>({id:d.id,...d.data()}));notifyNew(n);const ns=n.map(p=>[p.id,p.flags,p.ok,p.why].join()).join('|');if(ns===sig)return;sig=ns;posts=n;refresh()},()=>{ptr(0,'')})}catch(e){}})();
 </script></body></html>
