@@ -8,6 +8,7 @@ try:
 except ImportError:  # only needed if you later switch to MySQL
     pymysql = None
 
+VERSION = "v6"
 app = Flask(__name__)
 # Open CORS by default (the API is public and uses no cookies). Set STRICT_CORS=1 + ALLOWED_ORIGIN to restrict.
 ORIGINS = ([o.strip().rstrip("/") for o in os.environ.get("ALLOWED_ORIGIN", "").split(",") if o.strip()]
@@ -46,6 +47,7 @@ def link_error(u):
 
 
 QUAL = {"12th", "Any graduate", "B.Tech / MCA"}
+cache = {"t": 0, "v": None}
 hits = {}  # ip -> recent post times (keep ONE gunicorn worker so this stays accurate)
 DUP = (sqlite3.IntegrityError,) + ((pymysql.err.IntegrityError,) if pymysql else ())
 
@@ -107,26 +109,30 @@ def oops(e):
     from werkzeug.exceptions import HTTPException
     if isinstance(e, HTTPException):
         return jsonify(error=e.description), e.code
-    print("ERROR:", repr(e))
+    app.logger.exception("Unhandled error")
     code = type(e).__name__ + (":" + str(e.args[0]) if e.args and isinstance(e.args[0], int) else "")
-    return jsonify(error="Server error. Please try again.", code=code), 500
+    return jsonify(error="Server error. Please try again.", code=code, detail=str(e)[:160], v=VERSION), 500
 
 
 @app.get("/")
 def health():
-    return "Fresher BLR API is running (" + ("MySQL" if MYSQL else "SQLite") + ")"
+    base = request.headers.get("X-Forwarded-Proto", "http") + "://" + request.host
+    return (f"Fresher BLR API {VERSION} is running ({'MySQL' if MYSQL else 'SQLite'})\n"
+            f"Database check: {base}/api/health\nJobs list: {base}/api/posts\n"), 200, {"Content-Type": "text/plain; charset=utf-8"}
 
 
 @app.get("/api/health")
 def db_health():
     ensure()
     run("SELECT 1", fetch=True)
-    return jsonify(db="ok", engine="MySQL" if MYSQL else "SQLite")
+    return jsonify(db="ok", engine="MySQL" if MYSQL else "SQLite", v=VERSION)
 
 
 @app.get("/api/posts")
 def list_posts():
     ensure()
+    if cache["v"] is not None and time.time() - cache["t"] < 3:
+        return cache["v"]
     now = int(time.time() * 1000)
     rows = run("SELECT id, ts, flags, ok, why, d FROM posts WHERE ts > ? OR kind='co' ORDER BY ts DESC LIMIT 500",
                (now - TTL_DAYS * DAY_MS,), fetch=True)
@@ -134,6 +140,7 @@ def list_posts():
         r["d"] = json.loads(r["d"])
     resp = jsonify(posts=rows, now=int(time.time() * 1000))
     resp.headers["Cache-Control"] = "no-store"
+    cache["v"], cache["t"] = resp, time.time()
     return resp
 
 
@@ -172,6 +179,7 @@ def create_post():
     hits[ip()] = h + [now]
     pid, _ = run("INSERT INTO posts(ts, kind, owner, d) VALUES(?,?,?,?)",
                  (int(now * 1000), d["type"], hashlib.sha256(token.encode()).hexdigest(), json.dumps(d)))
+    cache["v"] = None
     return jsonify(id=pid), 201
 
 
@@ -194,6 +202,7 @@ def vote(pid):
         run("UPDATE posts SET flags=flags+?, why=COALESCE(?, why) WHERE id=?", (w, str(b.get("why", ""))[:100] or None, pid))
     else:
         run("UPDATE posts SET ok=ok+1 WHERE id=?", (pid,))
+    cache["v"] = None
     return jsonify(ok=True)
 
 
@@ -202,6 +211,7 @@ def remove(pid):
     ensure()
     tok = hashlib.sha256(request.headers.get("X-Token", "").encode()).hexdigest()
     _, n = run("DELETE FROM posts WHERE id=? AND owner=?", (pid, tok))
+    cache["v"] = None
     return (jsonify(ok=True), 200) if n else err("Not allowed.", 403)
 
 
