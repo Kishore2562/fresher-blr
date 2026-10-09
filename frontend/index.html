@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><title>Fresher BLR — jobs for freshers in Bengaluru</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Fresher BLR — jobs for freshers across Bengaluru tech parks.">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:wght@500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f0eee6;--pn:#faf9f5;--ink:#141413;--mut:#6b6a68;--ln:#e0ddd0;--ac:#c15f3c;--ok:#3f5a2a;--wn:#7a4a12;--wb:#f6e7cf;--land:#f0eee6;--wat:#d3e0e4;--grn:#dfe5cf;--rd:#fffdf8;--rc:#dcd8c8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -81,9 +82,10 @@ body{height:100dvh}
 #ptr{height:0;overflow:hidden;text-align:center;font-size:12px;font-weight:600;color:var(--mut);display:flex;align-items:center;justify-content:center}html,body{overscroll-behavior-y:contain}
 #ptr{transition:height .18s ease;background:var(--pn)}.spin{width:16px;height:16px;border:2px solid var(--ln);border-top-color:var(--ac);border-radius:50%;animation:rot .7s linear infinite;display:inline-block;margin-right:8px}@keyframes rot{to{transform:rotate(360deg)}}
 .arr{display:inline-block;margin-right:8px;transition:transform .2s;font-size:14px}.arr.up{transform:rotate(180deg)}
+#ft{position:sticky;bottom:0;background:var(--pn);border-top:1px solid var(--ln);padding:8px 16px calc(8px + env(safe-area-inset-bottom,0px));font-size:12px;text-align:center;color:var(--mut);line-height:1.5;overflow-wrap:anywhere}#ft b{color:var(--ink)}#ft a{font-weight:600}
 </style></head><body>
 <div id="map"><svg id="svg" viewBox="0 0 600 430" preserveAspectRatio="xMidYMid meet"><rect x="-600" y="-600" width="1800" height="1600" fill="var(--land)"/><g id="base"></g><g id="nodes"></g></svg><div id="note">Pin positions are approximate — use “Open in Maps” for the exact address. Pulsing pins have live openings.</div></div>
-<div id="panel"><div id="top"><div class="hd"><div><div class="logo"><i></i>Fresher BLR</div><div class="sub" style="margin:0;font-size:12px">Jobs for freshers across Bengaluru</div></div><div class="hbtn"><button class="btn gh ibtn" data-bell="1" title="Alerts" aria-label="Alerts">🔔</button><button class="btn gh ibtn" data-tg="1" title="Light / Dark mode" aria-label="Toggle dark mode">🌓</button></div></div><div class="tabs"><button data-tab="parks">Tech Parks</button><button data-tab="other">City Jobs</button><button data-tab="saved">Saved</button></div></div><div id="ptr"></div><div id="bd"></div></div><div id="toast"></div>
+<div id="panel"><div id="top"><div class="hd"><div><div class="logo"><i></i>Fresher BLR</div><div class="sub" style="margin:0;font-size:12px">Jobs for freshers across Bengaluru</div></div><div class="hbtn"><button class="btn gh ibtn" data-bell="1" title="Alerts" aria-label="Alerts">🔔</button><button class="btn gh ibtn" data-tg="1" title="Light / Dark mode" aria-label="Toggle dark mode">🌓</button></div></div><div class="tabs"><button data-tab="parks">Tech Parks</button><button data-tab="other">City Jobs</button><button data-tab="saved">Saved</button></div></div><div id="ptr"></div><div id="bd"></div><div id="ft">Idea &amp; developed by <a href="mailto:gonnabattula.kishore@gmail.com?subject=Fresher%20BLR">gonnabattula.kishore@gmail.com</a></div></div><div id="toast"></div>
 <script>
 // PUBLIC MODE: put your Render backend URL in api (e.g. 'https://walkin-blr-api.onrender.com'). Leave site blank to use the page's own address.
 const CFG={api:'https://fresher-blr.onrender.com',site:''};
